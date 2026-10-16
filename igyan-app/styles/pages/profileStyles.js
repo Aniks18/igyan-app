@@ -18,7 +18,7 @@ export const profileStyles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.md,
@@ -90,7 +90,7 @@ export const profileStyles = StyleSheet.create({
     backgroundColor: '#FF5252',
   },
   logoutText: {
-    color: '#FFFFFF',
+    color: "#12305c",
     fontSize: FontSizes.md,
     fontWeight: 'bold',
   },

@@ -487,7 +487,7 @@ Be encouraging but honest. Provide actionable advice. Keep responses concise and
         ) : (
           <View style={styles.uploadedFileCard}>
             <View style={styles.uploadedFileInfo}>
-              <IconSymbol name="doc.fill" size={24} color="#00abf4" />
+              <IconSymbol name="doc.fill" size={24} color="#4f46e5" />
               <Text style={styles.uploadedFileName} numberOfLines={1}>
                 {uploadedFile.name}
               </Text>
@@ -523,7 +523,7 @@ Be encouraging but honest. Provide actionable advice. Keep responses concise and
           ))}
           {isLoading && (
             <View style={styles.loadingBubble}>
-              <ActivityIndicator size="small" color="#00abf4" />
+              <ActivityIndicator size="small" color="#4f46e5" />
               <Text style={styles.loadingText}>Thinking...</Text>
             </View>
           )}
@@ -623,7 +623,7 @@ Be encouraging but honest. Provide actionable advice. Keep responses concise and
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
   },
   content: {
     flex: 1,
@@ -645,14 +645,14 @@ const styles = StyleSheet.create({
   loadingBubble: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     padding: 12,
     borderRadius: 16,
     alignSelf: 'flex-start',
     marginTop: 8,
   },
   loadingText: {
-    color: '#f8fafc',
+    color: "#12305c",
     marginLeft: 8,
     fontSize: 14,
   },
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     marginHorizontal: 16,
     marginVertical: 8,
     padding: 12,
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   uploadedFileName: {
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 14,
     marginLeft: 10,
     flex: 1,
@@ -689,21 +689,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   starterPrompt: {
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
   },
   starterPromptText: {
-    color: '#00abf4',
+    color: "#4f46e5",
     fontSize: 13,
   },
   inputSection: {
     padding: 16,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#135167',
+    borderTopColor: "#d9e3f3",
   },
   pitchButton: {
     flexDirection: 'row',
@@ -731,11 +731,11 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 15,
     maxHeight: 100,
   },
@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -751,13 +751,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#4a5568',
   },
   pitchInputContainer: {
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
   },
   pitchInput: {
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 15,
     minHeight: 80,
     maxHeight: 150,
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelPitchText: {
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 15,
     fontWeight: '500',
   },

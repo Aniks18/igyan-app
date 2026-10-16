@@ -41,7 +41,7 @@ export const coursesStyles = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   categoryChipActive: {
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
   },
   categoryChipInactive: {
     backgroundColor: '#E0E0E0',
@@ -94,7 +94,7 @@ export const coursesStyles = StyleSheet.create({
   coursePrice: {
     fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: '#1E88E5',
+    color: "#4f46e5",
   },
   courseFree: {
     color: '#43A047',
@@ -107,7 +107,7 @@ export const coursesStyles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
     borderRadius: 2,
   },
 });

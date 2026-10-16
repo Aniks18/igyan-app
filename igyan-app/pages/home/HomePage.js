@@ -4,12 +4,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, Image } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { githubUI as c } from '../../constants/githubUI';
 import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
-import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
-import { useThemeColor } from '../../hooks/useThemeColor';
 import { homeStyles } from '../../styles/pages/homeStyles';
 import { useAuth } from '../../utils/AuthContext';
 import { supabase } from '../../utils/supabase';
@@ -17,8 +17,6 @@ import { supabase } from '../../utils/supabase';
 const INSTITUTIONAL_ROLES = ['super_admin', 'co_admin', 'student', 'faculty', 'parent'];
 
 export default function HomePage() {
-  const cardColor = useThemeColor({}, 'card');
-  const textColor = useThemeColor({}, 'text');
   const { user } = useAuth();
   
   const [schoolData, setSchoolData] = useState(null);
@@ -60,23 +58,29 @@ export default function HomePage() {
   };
 
   return (
-    <ThemedView style={homeStyles.container}>
+    <ThemedView style={[homeStyles.container, { backgroundColor: c.background }]}>
       <ScrollView contentContainerStyle={homeStyles.scrollContent}>
-        {/* Header Section */}
-        <View style={homeStyles.headerSection}>
-          {schoolData?.logo_url && (
-            <Image
-              source={{ uri: schoolData.logo_url }}
-              style={{ width: 50, height: 50, borderRadius: 8, marginBottom: 12 }}
-              resizeMode="contain"
-            />
-          )}
-          <ThemedText style={homeStyles.titleText}>
-            {schoolData?.school_name || 'iGyan'}
-          </ThemedText>
-          <ThemedText style={homeStyles.welcomeText}>
-            Welcome back, {user?.full_name?.split(' ')[0] || 'there'}!
-          </ThemedText>
+        <LinearGradient colors={['#1666be', '#27358e', '#74159d']} style={dashboard.hero}>
+          <View style={dashboard.brandRow}>
+            <Image source={require('../../assets/brand/igyan-ai-mark.png')} style={dashboard.mark} />
+            <View style={{ flex: 1 }}><Text style={dashboard.brand}>IGYAN AI</Text><Text style={dashboard.tagline}>{schoolData?.school_name || 'Talent in Motion'}</Text></View>
+          </View>
+          <Text style={dashboard.greeting}>Welcome back, {user?.full_name?.split(' ')[0] || 'Learner'}.</Text>
+          <Text style={dashboard.heroCopy}>Your workspace for learning, leading, and growing. Turn curiosity into progress, one step at a time.</Text>
+          <TouchableOpacity accessibilityRole="button" style={dashboard.heroButton} onPress={() => router.push('/daily-timetable')}><IconSymbol name="calendar" size={18} color="#fff" /><Text style={dashboard.heroButtonText}>View your calendar</Text><IconSymbol name="chevron.right" size={16} color="#fff" /></TouchableOpacity>
+        </LinearGradient>
+
+        <Text style={dashboard.sectionTitle}>Quick launchpad</Text>
+        <Text style={dashboard.sectionCopy}>Jump back into the tools that keep you moving.</Text>
+        <View style={dashboard.grid}>
+          {[
+            { title: 'Learn', detail: 'Explore your courses', icon: 'book.fill', route: '/(tabs)/courses' },
+            { title: 'Classroom', detail: 'Connect and collaborate', icon: 'video.fill', route: '/live-classroom' },
+            { title: 'AI Viva Lab', detail: 'Practice your pitch', icon: 'sparkles', route: '/viva-ai' },
+            { title: 'AI Tools', detail: 'Create, study, and build', icon: 'cpu', route: '/tools' },
+            { title: 'Pitch Craft', detail: 'Bring ideas to life', icon: 'doc.richtext.fill', route: '/content-generator' },
+            { title: 'Calendar', detail: 'Plan your next step', icon: 'calendar', route: '/daily-calendar' },
+          ].map(action => <TouchableOpacity accessibilityRole="button" key={action.title} onPress={() => router.push(action.route)} style={dashboard.action}><View style={dashboard.actionIcon}><IconSymbol name={action.icon} size={23} color={c.primary} /></View><Text style={dashboard.actionTitle}>{action.title}</Text><Text style={dashboard.actionDetail}>{action.detail}</Text><IconSymbol name="arrow.up.right" size={16} color={c.primary} /></TouchableOpacity>)}
         </View>
 
         {/* Parent — My Children */}
@@ -106,71 +110,11 @@ export default function HomePage() {
           </View>
         )}
 
-        {/* Featured Banner */}
-        <View style={homeStyles.featuredCard}>
-          <Text style={homeStyles.featuredTitle}>Start Learning Today!</Text>
-          <Text style={homeStyles.featuredDescription}>
-            Access 1000+ courses from industry experts. Begin your journey to success.
-          </Text>
-          <TouchableOpacity 
-            style={homeStyles.featuredButton}
-            onPress={() => router.push('/(tabs)/courses')}
-          >
-            <Text style={homeStyles.featuredButtonText}>Explore Courses</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Live Classroom Banner */}
-        <TouchableOpacity 
-          style={[homeStyles.featuredCard, { backgroundColor: '#7c3aed', marginTop: 16 }]}
-          onPress={() => router.push('/live-classroom')}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontSize: 32, marginRight: 12 }}>🎥</Text>
-            <Text style={[homeStyles.featuredTitle, { flex: 1 }]}>Join Live Classes</Text>
-          </View>
-          <Text style={homeStyles.featuredDescription}>
-            Connect with teachers and classmates in real-time video sessions
-          </Text>
-          <View style={[homeStyles.featuredButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-            <Text style={homeStyles.featuredButtonText}>Start i-Meet →</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Viva AI Banner */}
-        <TouchableOpacity 
-          style={[homeStyles.featuredCard, { backgroundColor: '#0891b2', marginTop: 16 }]}
-          onPress={() => router.push('/viva-ai')}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontSize: 32, marginRight: 12 }}>🦈</Text>
-            <Text style={[homeStyles.featuredTitle, { flex: 1 }]}>Viva AI</Text>
-          </View>
-          <Text style={homeStyles.featuredDescription}>
-            Create pitch decks and practice your pitch with AI-powered feedback
-          </Text>
-          <View style={[homeStyles.featuredButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-            <Text style={homeStyles.featuredButtonText}>Start Pitching →</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* AI Tools Banner */}
-        <TouchableOpacity 
-          style={[homeStyles.featuredCard, { backgroundColor: '#059669', marginTop: 16 }]}
-          onPress={() => router.push('/tools')}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontSize: 32, marginRight: 12 }}>🤖</Text>
-            <Text style={[homeStyles.featuredTitle, { flex: 1 }]}>AI Learning Tools</Text>
-          </View>
-          <Text style={homeStyles.featuredDescription}>
-            Code tutor, text summarizer, and more AI-powered tools
-          </Text>
-          <View style={[homeStyles.featuredButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-            <Text style={homeStyles.featuredButtonText}>Explore Tools →</Text>
-          </View>
-        </TouchableOpacity>
       </ScrollView>
     </ThemedView>
   );
 }
+
+const dashboard = StyleSheet.create({
+  hero: { borderRadius: 22, padding: 24, marginBottom: 28 }, brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 }, mark: { width: 52, height: 52, resizeMode: 'contain', borderRadius: 12, backgroundColor: '#fff' }, brand: { color: '#fff', fontSize: 20, fontWeight: '800' }, tagline: { color: '#dbeafe', fontSize: 12, marginTop: 4 }, greeting: { color: '#fff', fontSize: 28, lineHeight: 35, fontWeight: '700', letterSpacing: -0.5 }, heroCopy: { color: '#e0e7ff', fontSize: 14, lineHeight: 23, marginTop: 12 }, heroButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 12, borderRadius: 24, marginTop: 22 }, heroButtonText: { color: '#fff', fontWeight: '600', fontSize: 13 }, sectionTitle: { color: c.heading, fontSize: 21, fontWeight: '700' }, sectionCopy: { color: c.muted, fontSize: 14, lineHeight: 22, marginTop: 6, marginBottom: 18 }, grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, marginBottom: 24 }, action: { width: '48%', backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 16, padding: 16, gap: 10 }, actionIcon: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef2ff', borderRadius: 12 }, actionTitle: { color: c.heading, fontSize: 16, fontWeight: '700' }, actionDetail: { color: c.muted, fontSize: 12, lineHeight: 19 },
+});

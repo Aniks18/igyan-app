@@ -62,13 +62,13 @@ export const globalStyles = StyleSheet.create({
     fontSize: FontSizes.sm,
   },
   link: {
-    color: '#1E88E5',
+    color: "#4f46e5",
     fontSize: FontSizes.md,
   },
 
   // Buttons
   primaryButton: {
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: 12,
@@ -82,14 +82,14 @@ export const globalStyles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#1E88E5',
+    borderColor: "#4f46e5",
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#1E88E5',
+    color: "#4f46e5",
     fontSize: FontSizes.md,
     fontWeight: 'bold',
   },

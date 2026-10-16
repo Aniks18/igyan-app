@@ -51,13 +51,13 @@ export default function TabLayout() {
       <Header title={schoolName} onMenuPress={openSideNav} />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#00abf4',
-          tabBarInactiveTintColor: '#7a8b9c',
+          tabBarActiveTintColor: '#4f46e5',
+          tabBarInactiveTintColor: '#64748b',
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarStyle: {
-            backgroundColor: '#0a2434',
-            borderTopColor: '#135167',
+            backgroundColor: '#ffffff',
+            borderTopColor: '#d9e3f3',
             borderTopWidth: 1,
           },
         }}
@@ -65,14 +65,14 @@ export default function TabLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            title: 'Home',
+            title: 'Dashboard',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
         />
         <Tabs.Screen
           name="courses"
           options={{
-            title: 'Courses',
+            title: 'Learn',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
           }}
         />
@@ -98,6 +98,6 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a2434',
+    backgroundColor: '#ffffff',
   },
 });

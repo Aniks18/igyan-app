@@ -64,7 +64,7 @@ export default function CoursesPage() {
     return (
       <ThemedView style={coursesStyles.container}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#1E88E5" />
+          <ActivityIndicator size="large" color="#4f46e5" />
           <ThemedText style={{ marginTop: 16, fontSize: 16 }}>Loading courses...</ThemedText>
         </View>
       </ThemedView>
@@ -121,10 +121,10 @@ export default function CoursesPage() {
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 24,
-                backgroundColor: activeCategory === category ? '#1E88E5' : cardColor,
+                backgroundColor: activeCategory === category ? "#4f46e5" : cardColor,
                 borderWidth: 1,
-                borderColor: activeCategory === category ? '#1E88E5' : borderColor,
-                shadowColor: activeCategory === category ? '#1E88E5' : '#000',
+                borderColor: activeCategory === category ? "#4f46e5" : borderColor,
+                shadowColor: activeCategory === category ? "#4f46e5" : '#000',
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: activeCategory === category ? 0.3 : 0.05,
                 shadowRadius: 4,
@@ -188,7 +188,7 @@ export default function CoursesPage() {
                     height: 140,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: course.thumbnail ? 'transparent' : '#1E88E510',
+                    backgroundColor: course.thumbnail ? 'transparent' : "#4f46e510",
                   }}>
                     <ThemedText style={{ fontSize: 56 }}>{course.thumbnail}</ThemedText>
                   </View>
@@ -197,14 +197,14 @@ export default function CoursesPage() {
                   <View style={{ flex: 1, padding: 16, paddingLeft: 12 }}>
                     {/* Category Badge */}
                     <View style={{
-                      backgroundColor: '#1E88E515',
+                      backgroundColor: "#4f46e515",
                       paddingHorizontal: 10,
                       paddingVertical: 4,
                       borderRadius: 8,
                       alignSelf: 'flex-start',
                       marginBottom: 8,
                     }}>
-                      <ThemedText style={{ fontSize: 11, fontWeight: '700', color: '#1E88E5' }}>
+                      <ThemedText style={{ fontSize: 11, fontWeight: '700', color: "#4f46e5" }}>
                         {course.category.toUpperCase()}
                       </ThemedText>
                     </View>
@@ -230,7 +230,7 @@ export default function CoursesPage() {
                       <ThemedText style={{
                         fontSize: 14,
                         fontWeight: '700',
-                        color: course.price === 'Free' ? '#10B981' : '#1E88E5',
+                        color: course.price === 'Free' ? '#10B981' : "#4f46e5",
                       }}>
                         {course.price}
                       </ThemedText>

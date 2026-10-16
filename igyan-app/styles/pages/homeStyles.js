@@ -25,7 +25,7 @@ export const homeStyles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   brandText: {
-    color: '#1E88E5',
+    color: "#4f46e5",
   },
   sectionTitle: {
     fontSize: FontSizes.xl,
@@ -37,17 +37,17 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 16,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
   },
   featuredTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: "#12305c",
     marginBottom: Spacing.sm,
   },
   featuredDescription: {
     fontSize: FontSizes.md,
-    color: '#FFFFFF',
+    color: "#12305c",
     opacity: 0.9,
     marginBottom: Spacing.md,
   },
@@ -59,7 +59,7 @@ export const homeStyles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   featuredButtonText: {
-    color: '#1E88E5',
+    color: "#4f46e5",
     fontWeight: 'bold',
   },
   courseCard: {

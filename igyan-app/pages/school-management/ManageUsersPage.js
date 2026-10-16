@@ -27,7 +27,7 @@ const FILTER_TABS = [
 ];
 
 const ROLE_OPTIONS = [
-  { key: 'student', label: 'Student', icon: 'school', color: '#3b82f6' },
+  { key: 'student', label: 'Student', icon: 'school', color: "#4f46e5" },
   { key: 'faculty', label: 'Faculty', icon: 'badge', color: '#a855f7' },
   { key: 'parent', label: 'Parent', icon: 'people', color: '#22c55e' },
   { key: 'co_admin', label: 'Co-Admin', icon: 'admin-panel-settings', color: '#f59e0b' },

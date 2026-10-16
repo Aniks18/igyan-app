@@ -36,7 +36,7 @@ const tools = [
     title: 'Code Tutor',
     description: 'AI-powered coding teacher for all programming languages',
     icon: 'chevron.left.forwardslash.chevron.right',
-    color: '#3B82F6',
+    color: "#4f46e5",
     route: '/tools/code-tutor',
   },
   {

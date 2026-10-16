@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   documentTitle: {
-    color: '#fff',
+    color: "#12305c",
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',

@@ -21,7 +21,7 @@ const iGyanLightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#00abf4',
+    primary: "#4f46e5",
     background: '#f8fafc',
     card: '#FFFFFF',
     text: '#0a2434',
@@ -33,7 +33,7 @@ const iGyanDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    primary: '#00abf4',
+    primary: "#4f46e5",
     background: '#0a2434',
     card: '#135167',
     text: '#f8fafc',
@@ -89,7 +89,7 @@ function RootLayoutContent() {
           <Stack.Screen name="chat-conversation" options={{ title: 'Chat', headerShown: false }} />
         </Stack>
         <SideNavbar isOpen={isOpen} onClose={closeSideNav} />
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </View>
     </ThemeProvider>
   );

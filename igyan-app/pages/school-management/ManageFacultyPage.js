@@ -236,7 +236,7 @@ export default function ManageFacultyPage() {
                 ListEmptyComponent={<Text style={{ color: C.muted, textAlign: 'center', padding: 20 }}>No faculty available</Text>}
                 renderItem={({ item }) => (
                   <TouchableOpacity style={wz.row} onPress={() => { setForm(p => ({ ...p, facultyId: item.id })); setWizardStep(2); }}>
-                    <View style={[wz.avatar, { backgroundColor: '#3b82f6' }]}>
+                    <View style={[wz.avatar, { backgroundColor: "#4f46e5" }]}>
                       <Text style={wz.avatarText}>{(item.full_name || '?')[0].toUpperCase()}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
@@ -344,7 +344,7 @@ export default function ManageFacultyPage() {
 
 function ConfirmRow({ icon, label, value, last }) {
   return (
-    <View style={[wz.confirmRow, !last && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#1e293b' }]}>
+    <View style={[wz.confirmRow, !last && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#d9e3f3" }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <MaterialIcons name={icon} size={16} color={C.muted} />
         <Text style={{ fontSize: 13, color: C.muted }}>{label}</Text>
@@ -356,7 +356,7 @@ function ConfirmRow({ icon, label, value, last }) {
 
 const wz = StyleSheet.create({
   stepBar: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 8, paddingBottom: 12 },
-  stepDot: { width: 24, height: 4, borderRadius: 2, backgroundColor: '#1e293b' },
+  stepDot: { width: 24, height: 4, borderRadius: 2, backgroundColor: "#ffffff" },
   stepDotActive: { backgroundColor: C.accent },
   stepDotCurrent: { width: 32 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, marginTop: 8, backgroundColor: C.surface, borderRadius: 12 },

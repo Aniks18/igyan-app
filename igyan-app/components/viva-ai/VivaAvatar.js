@@ -122,11 +122,11 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#00abf4',
+    borderColor: "#4f46e5",
   },
   avatarListening: {
     borderColor: '#22c55e',
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     borderWidth: 2,
     borderColor: 'transparent',
-    borderTopColor: '#00abf4',
-    borderRightColor: '#00abf4',
+    borderTopColor: "#4f46e5",
+    borderRightColor: "#4f46e5",
   },
   ringListening: {
     borderTopColor: '#22c55e',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statusText: {
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 13,
     fontWeight: '500',
   },

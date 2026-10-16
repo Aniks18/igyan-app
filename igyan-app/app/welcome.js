@@ -3,15 +3,15 @@
  * First screen users see when opening the app
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '../components/IconSymbol';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.8);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -35,7 +35,7 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       {/* Logo Section */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.logoContainer,
           {
@@ -44,8 +44,8 @@ export default function WelcomeScreen() {
           },
         ]}
       >
-        <Image 
-          source={require('../assets/logos/igx.png')} 
+        <Image
+          source={require('../assets/brand/igyan-ai-mark.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />
@@ -53,9 +53,9 @@ export default function WelcomeScreen() {
 
       {/* Welcome Message */}
       <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
-        <Text style={styles.title}>Welcome to iGyan</Text>
+        <Text style={styles.title}>Empowering the future of learning.</Text>
         <Text style={styles.description}>
-          Your journey to knowledge starts here. Access thousands of courses from expert instructors worldwide.
+          Personalized pathways, AI mentors, and a connected workspace for every learner and educator.
         </Text>
       </Animated.View>
 
@@ -63,7 +63,7 @@ export default function WelcomeScreen() {
       <Animated.View style={[styles.buttonContainer, { opacity: fadeAnim }]}>
         <TouchableOpacity style={styles.startButton} onPress={handleGetStarted}>
           <Text style={styles.startButtonText}>Get Started</Text>
-          <IconSymbol name="chevron.right" size={24} color="#0a2434" />
+          <IconSymbol name="chevron.right" size={24} color="#ffffff" />
         </TouchableOpacity>
       </Animated.View>
 
@@ -77,7 +77,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
     justifyContent: 'center',
   },
   logoContainer: {
@@ -98,13 +98,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#f8fafc',
+    color: "#12305c",
     marginBottom: 12,
     textAlign: 'center',
   },
   description: {
     fontSize: 15,
-    color: '#f8fafc',
+    color: "#12305c",
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.85,
@@ -114,21 +114,21 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   startButton: {
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 16,
-    shadowColor: '#00abf4',
+    shadowColor: "#4f46e5",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 6,
   },
   startButtonText: {
-    color: '#0a2434',
+    color: "#ffffff",
     fontSize: 20,
     fontWeight: 'bold',
     marginRight: 8,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     opacity: 0.3,
   },
   decorCircle2: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     opacity: 0.1,
   },
 });

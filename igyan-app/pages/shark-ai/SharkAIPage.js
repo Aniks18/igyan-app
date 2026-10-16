@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   stopSpeakingText: {
-    color: '#fff',
+    color: "#12305c",
     fontSize: 13,
   },
 });

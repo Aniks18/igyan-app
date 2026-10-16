@@ -14,7 +14,7 @@ import { useSideNav } from '../../utils/SideNavContext';
 import { useAuth } from '../../utils/AuthContext';
 import { getMessages, sendMessage, markMessagesRead, deleteMessage } from '../../services/messagingService';
 
-const C = { bg: '#0a0f1a', surface: '#111827', border: '#1e293b', accent: '#3b82f6', green: '#22c55e', amber: '#f59e0b', red: '#ef4444', purple: '#a855f7', text: '#e2e8f0', muted: '#64748b', dim: '#334155' };
+const C = { bg: "#f5f8ff", surface: "#ffffff", border: "#d9e3f3", accent: "#4f46e5", green: '#22c55e', amber: '#f59e0b', red: '#ef4444', purple: '#a855f7', text: "#12305c", muted: "#476b9c", dim: "#476b9c" };
 
 const FLAGS = [
   { key: 'general', label: 'General', icon: 'chat', color: C.accent },
@@ -258,7 +258,7 @@ const s = StyleSheet.create({
   bubbleMine: { alignSelf: 'flex-end', backgroundColor: C.accent, borderBottomRightRadius: 4 },
   bubbleTheirs: { alignSelf: 'flex-start', backgroundColor: C.surface, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: C.border },
   msgText: { fontSize: 14, lineHeight: 20 },
-  msgTextMine: { color: '#fff' },
+  msgTextMine: { color: "#12305c" },
   msgTextTheirs: { color: C.text },
   msgMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 4 },
   msgTime: { fontSize: 10, color: 'rgba(255,255,255,0.5)' },

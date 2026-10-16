@@ -33,22 +33,22 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle}>Preferences</ThemedText>
         
           <View style={[styles.settingItem, { backgroundColor: cardColor }]}>
-            <IconSymbol name="bell.fill" size={24} color="#00abf4" />
+            <IconSymbol name="bell.fill" size={24} color="#4f46e5" />
             <ThemedText style={styles.settingText}>Push Notifications</ThemedText>
             <Switch
               value={notifications}
               onValueChange={setNotifications}
-              trackColor={{ false: '#767577', true: '#00abf4' }}
+              trackColor={{ false: '#767577', true: "#4f46e5" }}
             />
           </View>
 
           <View style={[styles.settingItem, { backgroundColor: cardColor }]}>
-            <IconSymbol name="star.fill" size={24} color="#00abf4" />
+            <IconSymbol name="star.fill" size={24} color="#4f46e5" />
             <ThemedText style={styles.settingText}>Dark Mode</ThemedText>
             <Switch
               value={darkMode}
               onValueChange={setDarkMode}
-              trackColor={{ false: '#767577', true: '#00abf4' }}
+              trackColor={{ false: '#767577', true: "#4f46e5" }}
             />
           </View>
         </View>
@@ -57,13 +57,13 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle}>Account</ThemedText>
         
           <TouchableOpacity style={[styles.settingItem, { backgroundColor: cardColor }]}>
-            <IconSymbol name="person.fill" size={24} color="#00abf4" />
+            <IconSymbol name="person.fill" size={24} color="#4f46e5" />
             <ThemedText style={styles.settingText}>Edit Profile</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={textColor} />
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.settingItem, { backgroundColor: cardColor }]}>
-            <IconSymbol name="gear" size={24} color="#00abf4" />
+            <IconSymbol name="gear" size={24} color="#4f46e5" />
             <ThemedText style={styles.settingText}>Privacy Settings</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={textColor} />
           </TouchableOpacity>
@@ -73,13 +73,13 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle}>Support</ThemedText>
         
           <TouchableOpacity style={[styles.settingItem, { backgroundColor: cardColor }]}>
-            <IconSymbol name="book.fill" size={24} color="#00abf4" />
+            <IconSymbol name="book.fill" size={24} color="#4f46e5" />
             <ThemedText style={styles.settingText}>Help Center</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={textColor} />
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.settingItem, { backgroundColor: cardColor }]}>
-            <IconSymbol name="paperplane.fill" size={24} color="#00abf4" />
+            <IconSymbol name="paperplane.fill" size={24} color="#4f46e5" />
             <ThemedText style={styles.settingText}>Contact Us</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={textColor} />
           </TouchableOpacity>

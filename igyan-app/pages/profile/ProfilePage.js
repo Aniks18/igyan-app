@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
   const { user, logout } = useAuth();
-  
+
   const [schoolData, setSchoolData] = useState(null);
   const [loadingSchool, setLoadingSchool] = useState(false);
 
@@ -50,7 +50,7 @@ export default function ProfilePage() {
         .select('*')
         .eq('id', user.school_id)
         .single();
-      
+
       if (!error && data) {
         setSchoolData(data);
       }
@@ -98,7 +98,7 @@ export default function ProfilePage() {
               📱 {user.phone} {user.phone_verified && '✓'}
             </ThemedText>
           )}
-          <View style={{ backgroundColor: '#00abf4', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginTop: 8 }}>
+          <View style={{ backgroundColor: "#4f46e5", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginTop: 8 }}>
             <ThemedText style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>
               {user?.role?.replace('_', ' ').toUpperCase() || 'USER'}
             </ThemedText>
@@ -110,7 +110,7 @@ export default function ProfilePage() {
           <View style={[profileStyles.menuSection, { backgroundColor: cardColor, padding: 16, borderRadius: 12, marginHorizontal: 16, marginBottom: 16 }]}>
             <ThemedText style={[profileStyles.sectionTitle, { marginBottom: 12 }]}>🏫 School Details</ThemedText>
             {loadingSchool ? (
-              <ActivityIndicator color="#00abf4" />
+              <ActivityIndicator color="#4f46e5" />
             ) : schoolData ? (
               <View>
                 {schoolData.logo_url && (
@@ -188,13 +188,13 @@ export default function ProfilePage() {
           {menuItems.map((item, index) => (
             <TouchableOpacity key={index}>
               <View style={[profileStyles.menuItem, { backgroundColor: cardColor }]}>
-                <IconSymbol name={item.icon} size={24} color="#1E88E5" style={profileStyles.menuIcon} />
+                <IconSymbol name={item.icon} size={24} color="#4f46e5" style={profileStyles.menuIcon} />
                 <ThemedText style={profileStyles.menuText}>{item.title}</ThemedText>
                 {item.badge && (
-                  <View style={{ 
-                    backgroundColor: '#1E88E5', 
-                    borderRadius: 12, 
-                    paddingHorizontal: 8, 
+                  <View style={{
+                    backgroundColor: "#4f46e5",
+                    borderRadius: 12,
+                    paddingHorizontal: 8,
                     paddingVertical: 2,
                     marginRight: 8,
                   }}>

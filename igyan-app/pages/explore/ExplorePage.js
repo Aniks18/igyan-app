@@ -27,7 +27,7 @@ const aiTools = [
     title: 'Code Tutor',
     description: 'Learn programming with AI guidance',
     icon: 'chevron.left.forwardslash.chevron.right',
-    color: '#3B82F6',
+    color: "#4f46e5",
   },
   {
     id: 'project-learning',
@@ -105,7 +105,7 @@ export default function ExplorePage() {
             <TouchableOpacity
               onPress={() => router.push('/tools')}
               style={{
-                backgroundColor: '#3B82F6',
+                backgroundColor: "#4f46e5",
                 paddingHorizontal: 16,
                 paddingVertical: 8,
                 borderRadius: 12,
@@ -183,26 +183,26 @@ export default function ExplorePage() {
 
           {/* Info Card */}
           <View style={{
-            backgroundColor: '#3B82F6' + '15',
+            backgroundColor: "#4f46e5" + '15',
             borderRadius: 20,
             padding: 20,
             marginBottom: 24,
             borderWidth: 1,
-            borderColor: '#3B82F6' + '30',
+            borderColor: "#4f46e5" + '30',
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'start', gap: 16 }}>
               <View style={{
                 width: 48,
                 height: 48,
                 borderRadius: 24,
-                backgroundColor: '#3B82F6',
+                backgroundColor: "#4f46e5",
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
                 <IconSymbol name="sparkles" size={24} color="#FFF" />
               </View>
               <View style={{ flex: 1 }}>
-                <ThemedText style={{ fontSize: 18, fontWeight: '700', marginBottom: 8, color: '#3B82F6' }}>
+                <ThemedText style={{ fontSize: 18, fontWeight: '700', marginBottom: 8, color: "#4f46e5" }}>
                   AI-Powered Learning
                 </ThemedText>
                 <ThemedText style={{ fontSize: 14, lineHeight: 20, color: '#999' }}>

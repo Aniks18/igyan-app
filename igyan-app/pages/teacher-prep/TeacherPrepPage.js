@@ -20,17 +20,17 @@ const { width } = Dimensions.get('window');
 const OPENAI_API_KEY = 'YOUR_OPENAI_API_KEY'; // Replace with your key
 
 const COLORS = {
-  background: '#0a1628',
-  surface: '#0f2133',
-  surfaceLight: '#152a3d',
+  background: "#f5f8ff",
+  surface: "#ffffff",
+  surfaceLight: "#f0f5ff",
   primary: '#10B981',
   primaryHover: '#059669',
   secondary: '#8B5CF6',
   cyan: '#00d4ff',
-  text: '#ffffff',
-  textMuted: '#94a3b8',
-  textLight: '#64748b',
-  border: '#1e3a5f',
+  text: "#12305c",
+  textMuted: "#476b9c",
+  textLight: "#476b9c",
+  border: "#d9e3f3",
   success: '#10B981',
   successLight: 'rgba(16, 185, 129, 0.15)',
   error: '#EF4444',
@@ -1260,7 +1260,7 @@ const styles = StyleSheet.create({
   answerLabelText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
+    color: "#12305c",
   },
   answerText: {
     flex: 1,

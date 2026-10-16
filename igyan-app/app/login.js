@@ -1,399 +1,61 @@
-/**
- * iGyan App - Login Screen with Portal Support
- */
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedView } from '../components/ThemedView';
-import { IconSymbol } from '../components/IconSymbol';
 import { useAuth } from '../utils/AuthContext';
+import { githubUI as c } from '../constants/githubUI';
 
-// Variant configurations
-const VARIANT_CONFIG = {
-  institutionalSuite: {
-    badge: 'Institutional Suite • Institutions',
-    title: 'Welcome back, visionary school leaders',
-    subtitle: 'Access the unified control center for iGyan Ai copilots, compliance, and innovation programs tailored to your campus.',
-    highlight: 'Institutional Suite',
-    helperTitle: 'Need help accessing your institution?',
-    helperText: 'Our strategy team can tailor governance, provisioning, and integrations for your network.',
-    signupText: 'Need to invite your leadership team?',
-    signupLink: 'Request workspace access',
-  },
-  professionalSuite: {
-    badge: 'Professional Suite • Learners & Families',
-    title: 'Log in to your iGyan learner copilots',
-    subtitle: 'Stay on top of daily learning plans, passion projects, and venture studio challenges curated for curious minds and ambitious families.',
-    highlight: 'Professional Suite',
-    helperTitle: 'New to Professional Suite?',
-    helperText: 'Request access in minutes and unlock guided roadmaps for the skills you want to master.',
-    signupText: 'First time discovering Professional Suite?',
-    signupLink: 'Create your personal account',
-  },
+const variants = {
+  institutionalSuite: { label: 'Institutional Suite', subtitle: 'For super admins, principals, and teachers.', placeholder: 'you@institution.edu', signup: 'Request workspace access' },
+  professionalSuite: { label: 'Launch Pad', subtitle: 'For students and parents.', placeholder: 'you@example.com', signup: 'Create your account' },
 };
-
 export default function LoginScreen() {
   const params = useLocalSearchParams();
-  const variant = params.variant || 'institutionalSuite';
-  const config = VARIANT_CONFIG[variant];
-  
-  const { login, loading: authLoading } = useAuth();
-  
+  const variant = typeof params.variant === 'string' && variants[params.variant] ? params.variant : 'institutionalSuite';
+  const config = variants[variant];
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
+  const [focused, setFocused] = useState(null);
+  const submit = async () => {
+    if (loading) return;
+    if (!email.trim() || !password) { setError('Please enter your email and password.'); return; }
+    setLoading(true); setError('');
     try {
-      const result = await login(email, password, variant);
-      
-      if (result.success) {
-        // Navigate to main app
-        router.replace('/(tabs)/home');
-      } else {
-        setError(result.error || 'Login failed. Please try again.');
-      }
-    } catch (err) {
-      setError(err.message || 'An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+      const result = await login(email.trim(), password, variant);
+      if (result.success) router.replace('/(tabs)/home');
+      else setError(result.error || 'Sign-in failed. Please try again.');
+    } catch (err) { setError(err.message || 'Unable to sign in. Please try again.'); }
+    finally { setLoading(false); }
   };
-
   return (
-    <ThemedView style={styles.container}>
-      <LinearGradient
-        colors={['#0a2434', '#135167']}
-        style={styles.gradient}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Back Button */}
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <IconSymbol name="chevron.left.forwardslash.chevron.right" size={20} color="#f8fafc" />
-            </TouchableOpacity>
-
-            {/* Login Card */}
-            <View style={styles.card}>
-              {/* Badge */}
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{config.badge}</Text>
-              </View>
-
-              {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.logoSmall}>
-                  <Text style={styles.logoText}>iGyan</Text>
-                </View>
-                <Text style={styles.title}>{config.title}</Text>
-                <Text style={styles.subtitle}>{config.subtitle}</Text>
-              </View>
-
-              {/* Error Message */}
-              {error ? (
-                <View style={styles.errorContainer}>
-                  <IconSymbol name="bell.fill" size={16} color="#ff5252" />
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              ) : null}
-
-              {/* Login Form */}
-              <View style={styles.form}>
-                {/* Email Input */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Email</Text>
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="you@school.com"
-                      placeholderTextColor="#999"
-                      value={email}
-                      onChangeText={(text) => {
-                        setEmail(text);
-                        setError('');
-                      }}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!loading}
-                    />
-                  </View>
-                </View>
-
-                {/* Password Input */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Password</Text>
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      style={[styles.input, styles.passwordInput]}
-                      placeholder="••••••••"
-                      placeholderTextColor="#999"
-                      value={password}
-                      onChangeText={(text) => {
-                        setPassword(text);
-                        setError('');
-                      }}
-                      secureTextEntry={!showPassword}
-                      editable={!loading}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButton}
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
-                      <IconSymbol
-                        name={showPassword ? 'star.fill' : 'star.fill'}
-                        size={20}
-                        color="#666"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Login Button */}
-                <TouchableOpacity
-                  style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-                  onPress={handleLogin}
-                  disabled={loading}
-                >
-                  <LinearGradient
-                    colors={['#00abf4', '#135167']}
-                    style={styles.buttonGradient}
-                  >
-                    {loading ? (
-                      <ActivityIndicator color="#ffffff" />
-                    ) : (
-                      <Text style={styles.loginButtonText}>Sign in to {config.highlight}</Text>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-
-              {/* Helper Box */}
-              <View style={styles.helperBox}>
-                <LinearGradient
-                  colors={['rgba(0, 171, 244, 0.1)', 'rgba(19, 81, 103, 0.05)']}
-                  style={styles.helperGradient}
-                >
-                  <Text style={styles.helperTitle}>{config.helperTitle}</Text>
-                  <Text style={styles.helperText}>{config.helperText}</Text>
-                </LinearGradient>
-              </View>
-
-              {/* Sign Up Link */}
-              <View style={styles.signupRow}>
-                <Text style={styles.signupPrompt}>{config.signupText}</Text>
-                <TouchableOpacity onPress={() => router.push('/signup')}>
-                  <Text style={styles.signupLink}>{config.signupLink}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </LinearGradient>
-    </ThemedView>
+    <SafeAreaView style={styles.screen}>
+      <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+          <Pressable accessibilityRole="button" onPress={() => router.replace('/auth-options')} style={styles.back}><MaterialIcons name="arrow-back" size={20} color={c.muted} /><Text style={styles.backText}>Choose workspace</Text></Pressable>
+          <View style={styles.form}>
+            <Image source={require('../assets/brand/igyan-ai-mark.png')} style={styles.logo} />
+            <Text style={styles.eyebrow}>{config.label.toUpperCase()}</Text>
+            <Text accessibilityRole="header" style={styles.title}>Welcome back</Text>
+            <Text style={styles.subtitle}>{config.subtitle}</Text>
+            {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+            <Text style={styles.label}>Email address</Text>
+            <View style={[styles.inputRow, focused === 'email' && styles.focused]}><MaterialIcons name="mail-outline" color="#94a3b8" size={20} /><TextInput accessibilityLabel="Email address" style={styles.input} value={email} placeholder={config.placeholder} placeholderTextColor="#94a3b8" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} textContentType="username" onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} onChangeText={value => { setEmail(value); setError(''); }} editable={!loading} /></View>
+            <Text style={styles.label}>Password</Text>
+            <View style={[styles.inputRow, focused === 'password' && styles.focused]}><TextInput accessibilityLabel="Password" style={styles.input} value={password} placeholder="Enter your password" placeholderTextColor="#94a3b8" secureTextEntry={!visible} textContentType="password" autoCapitalize="none" onFocus={() => setFocused('password')} onBlur={() => setFocused(null)} onChangeText={value => { setPassword(value); setError(''); }} editable={!loading} returnKeyType="go" onSubmitEditing={submit} /><Pressable accessibilityRole="button" accessibilityLabel={visible ? 'Hide password' : 'Show password'} hitSlop={12} onPress={() => setVisible(value => !value)}><MaterialIcons name={visible ? 'visibility-off' : 'visibility'} size={22} color={c.muted} /></Pressable></View>
+            <Pressable accessibilityRole="button" disabled={loading} onPress={submit} style={({ pressed }) => [styles.submit, (pressed || loading) && { opacity: 0.7 }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Sign in</Text>}</Pressable>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/signup')} style={styles.signup}><Text style={styles.signupText}>{config.signup}</Text><MaterialIcons name="arrow-forward" size={18} color={c.blue} /></Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 30,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(248, 250, 252, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#00abf4',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  badgeText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#f8fafc',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  header: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  logoSmall: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: '#0a2434',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#f8fafc',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0a2434',
-    textAlign: 'center',
-    marginBottom: 6,
-    lineHeight: 26,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#135167',
-    textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 8,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffebee',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 8,
-  },
-  errorText: {
-    flex: 1,
-    color: '#c62828',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  form: {
-    marginBottom: 20,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0a2434',
-    marginBottom: 6,
-  },
-  inputWrapper: {
-    position: 'relative',
-  },
-  input: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d4d4d8',
-    borderRadius: 8,
-    padding: 14,
-    fontSize: 15,
-    color: '#0a2434',
-  },
-  passwordInput: {
-    paddingRight: 50,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 12,
-    top: 12,
-    padding: 4,
-  },
-  loginButton: {
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginTop: 8,
-  },
-  loginButtonDisabled: {
-    opacity: 0.6,
-  },
-  buttonGradient: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  loginButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  helperBox: {
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  helperGradient: {
-    padding: 14,
-  },
-  helperTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#0a2434',
-    marginBottom: 4,
-  },
-  helperText: {
-    fontSize: 11,
-    color: '#135167',
-    lineHeight: 16,
-  },
-  signupRow: {
-    alignItems: 'center',
-  },
-  signupPrompt: {
-    fontSize: 12,
-    color: '#135167',
-    marginBottom: 6,
-  },
-  signupLink: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#00abf4',
-  },
+  screen: { flex: 1, backgroundColor: '#fff' }, content: { flexGrow: 1, padding: 24, maxWidth: 540, width: '100%', alignSelf: 'center' }, back: { flexDirection: 'row', gap: 8, alignItems: 'center', minHeight: 44 }, backText: { color: c.muted, fontSize: 14 }, form: { flex: 1, justifyContent: 'center', paddingVertical: 40 }, logo: { width: 64, height: 64, resizeMode: 'contain', marginBottom: 32 }, eyebrow: { fontSize: 12, color: c.blue, fontWeight: '700', letterSpacing: 2 }, title: { fontSize: 34, fontWeight: '800', color: c.heading, marginTop: 16 }, subtitle: { fontSize: 16, lineHeight: 24, color: c.muted, marginTop: 10, marginBottom: 24 },
+  label: { fontSize: 14, fontWeight: '600', color: c.text, marginTop: 16, marginBottom: 8 }, inputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 54, borderWidth: 1, borderColor: '#d0d9e9', borderRadius: 12 }, focused: { borderColor: c.blue, backgroundColor: '#f8fbff' }, input: { flex: 1, color: c.heading, fontSize: 16, minHeight: 52 }, submit: { backgroundColor: c.blue, borderRadius: 12, minHeight: 54, alignItems: 'center', justifyContent: 'center', marginTop: 28 }, submitText: { color: '#fff', fontWeight: '700', fontSize: 16 }, error: { color: '#b91c1c', backgroundColor: '#fef2f2', borderRadius: 12, padding: 14, lineHeight: 20 }, signup: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, minHeight: 48, marginTop: 16 }, signupText: { color: c.blue, fontWeight: '600', fontSize: 14 },
 });

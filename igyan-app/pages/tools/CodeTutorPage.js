@@ -155,7 +155,7 @@ IMPORTANT:
             width: 36,
             height: 36,
             borderRadius: 18,
-            backgroundColor: '#3B82F6',
+            backgroundColor: "#4f46e5",
             alignItems: 'center',
             justifyContent: 'center',
             marginRight: 8,
@@ -166,7 +166,7 @@ IMPORTANT:
         
         <View style={{
           maxWidth: '75%',
-          backgroundColor: isUser ? '#3B82F6' : cardColor,
+          backgroundColor: isUser ? "#4f46e5" : cardColor,
           borderRadius: 16,
           borderWidth: isUser ? 0 : 1,
           borderColor: borderColor,
@@ -210,15 +210,15 @@ IMPORTANT:
           <TouchableOpacity
             onPress={() => setShowLanguagePicker(!showLanguagePicker)}
             style={{
-              backgroundColor: '#3B82F6' + '20',
+              backgroundColor: "#4f46e5" + '20',
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 8,
               borderWidth: 1,
-              borderColor: '#3B82F6',
+              borderColor: "#4f46e5",
             }}
           >
-            <ThemedText style={{ fontSize: 13, fontWeight: '600', color: '#3B82F6' }}>
+            <ThemedText style={{ fontSize: 13, fontWeight: '600', color: "#4f46e5" }}>
               {PROGRAMMING_LANGUAGES.find(l => l.value === selectedLanguage)?.label}
             </ThemedText>
           </TouchableOpacity>
@@ -245,12 +245,12 @@ IMPORTANT:
                   padding: 12,
                   borderBottomWidth: 1,
                   borderBottomColor: borderColor,
-                  backgroundColor: selectedLanguage === lang.value ? '#3B82F6' + '10' : 'transparent',
+                  backgroundColor: selectedLanguage === lang.value ? "#4f46e5" + '10' : 'transparent',
                 }}
               >
                 <ThemedText style={{ 
                   fontSize: 15,
-                  color: selectedLanguage === lang.value ? '#3B82F6' : textColor,
+                  color: selectedLanguage === lang.value ? "#4f46e5" : textColor,
                   fontWeight: selectedLanguage === lang.value ? '600' : '400',
                 }}>
                   {lang.label}
@@ -274,7 +274,7 @@ IMPORTANT:
               width: 80,
               height: 80,
               borderRadius: 40,
-              backgroundColor: '#3B82F6',
+              backgroundColor: "#4f46e5",
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 16,
@@ -316,7 +316,7 @@ IMPORTANT:
               width: 36,
               height: 36,
               borderRadius: 18,
-              backgroundColor: '#3B82F6',
+              backgroundColor: "#4f46e5",
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: 8,
@@ -330,7 +330,7 @@ IMPORTANT:
               borderColor: borderColor,
               padding: 12,
             }}>
-              <ActivityIndicator size="small" color="#3B82F6" />
+              <ActivityIndicator size="small" color="#4f46e5" />
             </View>
           </View>
         )}
@@ -368,7 +368,7 @@ IMPORTANT:
             onPress={handleSubmit}
             disabled={!inputMessage.trim() || isGenerating}
             style={{
-              backgroundColor: (!inputMessage.trim() || isGenerating) ? '#999' : '#3B82F6',
+              backgroundColor: (!inputMessage.trim() || isGenerating) ? '#999' : "#4f46e5",
               width: 48,
               height: 48,
               borderRadius: 24,

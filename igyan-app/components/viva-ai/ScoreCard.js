@@ -67,7 +67,7 @@ export default function ScoreCard({ overall, scores, criteria }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     marginHorizontal: 16,
     marginVertical: 8,
     borderRadius: 16,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryName: {
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 13,
     flex: 1,
     marginRight: 8,

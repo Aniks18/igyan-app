@@ -27,7 +27,7 @@ export default function SignupScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* Back Button */}
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#00abf4" />
+            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#4f46e5" />
           </TouchableOpacity>
 
           {/* Header */}
@@ -42,7 +42,7 @@ export default function SignupScreen() {
           {/* Signup Form */}
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <IconSymbol name="person.fill" size={20} color="#00abf4" />
+              <IconSymbol name="person.fill" size={20} color="#4f46e5" />
               <TextInput
                 style={styles.input}
                 placeholder="Full Name"
@@ -53,7 +53,7 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <IconSymbol name="paperplane.fill" size={20} color="#00abf4" />
+              <IconSymbol name="paperplane.fill" size={20} color="#4f46e5" />
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -66,7 +66,7 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <IconSymbol name="gear" size={20} color="#00abf4" />
+              <IconSymbol name="gear" size={20} color="#4f46e5" />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -78,7 +78,7 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <IconSymbol name="gear" size={20} color="#00abf4" />
+              <IconSymbol name="gear" size={20} color="#4f46e5" />
               <TextInput
                 style={styles.input}
                 placeholder="Confirm Password"
@@ -91,7 +91,7 @@ export default function SignupScreen() {
 
             <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
               <Text style={styles.signupButtonText}>Create Account</Text>
-              <IconSymbol name="chevron.right" size={20} color="#0a2434" />
+              <IconSymbol name="chevron.right" size={20} color="#ffffff" />
             </TouchableOpacity>
 
             <View style={styles.divider}>
@@ -125,7 +125,7 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
   },
   flex: {
     flex: 1,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#135167',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#f8fafc',
+    color: "#12305c",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#00abf4',
+    color: "#4f46e5",
     textAlign: 'center',
   },
   form: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -176,11 +176,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     fontSize: 16,
-    color: '#f8fafc',
+    color: "#12305c",
     marginLeft: 12,
   },
   signupButton: {
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   signupButtonText: {
-    color: '#0a2434',
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: 8,
@@ -202,16 +202,16 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
   },
   dividerText: {
     marginHorizontal: 16,
-    color: '#f8fafc',
+    color: "#12305c",
     opacity: 0.5,
   },
   socialButton: {
     borderWidth: 1,
-    borderColor: '#135167',
+    borderColor: "#d9e3f3",
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   socialButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#f8fafc',
+    color: "#12305c",
     marginLeft: 12,
   },
   loginRow: {
@@ -230,16 +230,16 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   loginText: {
-    color: '#f8fafc',
+    color: "#12305c",
   },
   loginLink: {
-    color: '#00abf4',
+    color: "#4f46e5",
     fontWeight: 'bold',
   },
   terms: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#f8fafc',
+    color: "#12305c",
     opacity: 0.5,
     marginTop: 24,
     marginBottom: 24,

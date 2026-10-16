@@ -10,17 +10,17 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 /* ────── Color tokens ────── */
 export const C = {
-  bg: '#0a0f1a',
-  surface: '#111827',
-  surfaceAlt: '#1a2236',
-  card: '#151d2e',
-  accent: '#3b82f6',
+  bg: "#f5f8ff",
+  surface: "#ffffff",
+  surfaceAlt: "#f0f5ff",
+  card: "#ffffff",
+  accent: "#4f46e5",
   accentDim: 'rgba(59,130,246,0.12)',
-  text: '#e2e8f0',
-  textSec: '#cbd5e1',
-  muted: '#64748b',
-  dim: '#475569',
-  border: '#1e293b',
+  text: "#12305c",
+  textSec: "#12305c",
+  muted: "#476b9c",
+  dim: "#476b9c",
+  border: "#d9e3f3",
   green: '#22c55e',
   greenDim: 'rgba(34,197,94,0.12)',
   red: '#ef4444',
@@ -35,7 +35,7 @@ export const C = {
 
 export const ADMIN_ROLES = ['super_admin', 'co_admin'];
 
-const AVATAR_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#06b6d4', '#ec4899', '#f97316'];
+const AVATAR_COLORS = ["#4f46e5", '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#06b6d4', '#ec4899', '#f97316'];
 function pickColor(str) {
   if (!str) return AVATAR_COLORS[0];
   let h = 0;
@@ -171,7 +171,7 @@ const ROLE_COLORS = {
   super_admin: { bg: 'rgba(239,68,68,0.12)', text: '#ef4444' },
   co_admin: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
   faculty: { bg: 'rgba(168,85,247,0.12)', text: '#a855f7' },
-  student: { bg: 'rgba(59,130,246,0.12)', text: '#3b82f6' },
+  student: { bg: 'rgba(59,130,246,0.12)', text: "#4f46e5" },
   parent: { bg: 'rgba(34,197,94,0.12)', text: '#22c55e' },
   b2c_student: { bg: 'rgba(6,182,212,0.12)', text: '#06b6d4' },
   b2c_mentor: { bg: 'rgba(236,72,153,0.12)', text: '#ec4899' },

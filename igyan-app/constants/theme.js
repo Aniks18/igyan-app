@@ -6,29 +6,29 @@
 import { Platform } from 'react-native';
 
 // iGyan Brand Colors
-const darkNavy = '#0a2434';      // Dark navy - primary background
-const tealBlue = '#135167';      // Teal blue - secondary elements
-const brightCyan = '#00abf4';    // Bright cyan - accents and CTAs
+const darkNavy = '#0f172a';      // Dark navy - primary background
+const tealBlue = '#1e293b';      // Teal blue - secondary elements
+const brightCyan = '#4f46e5';    // Bright cyan - accents and CTAs
 const lightGray = '#f8fafc';     // Light gray - text on dark
 
-const tintColorLight = brightCyan;
+const tintColorLight = '#4f46e5';
 const tintColorDark = brightCyan;
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#FFFFFF',
+    text: '#12305c',
+    background: '#f5f8ff',
     tint: tintColorLight,
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
-    primary: brightCyan,
+    primary: '#4f46e5',
     secondary: tealBlue,
-    accent: brightCyan,
+    accent: '#4f46e5',
     darkBg: darkNavy,
     lightText: lightGray,
-    card: '#F5F5F5',
-    border: '#E0E0E0',
+    card: '#ffffff',
+    border: '#d9e3f3',
   },
   dark: {
     text: '#ECEDEE',
@@ -37,9 +37,9 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
-    primary: brightCyan,
+    primary: '#4f46e5',
     secondary: tealBlue,
-    accent: brightCyan,
+    accent: '#4f46e5',
     darkBg: darkNavy,
     lightText: lightGray,
     card: tealBlue,

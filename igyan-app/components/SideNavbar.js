@@ -26,14 +26,14 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const DRAWER_WIDTH = Math.min(290, SCREEN_WIDTH * 0.8);
 
 const navItems = [
-  { id: 'home', label: 'Home', icon: 'house.fill', route: '/(tabs)/home' },
-  { id: 'courses', label: 'My Courses', icon: 'book.fill', route: '/(tabs)/courses' },
+  { id: 'home', label: 'Dashboard', icon: 'house.fill', route: '/(tabs)/home' },
+  { id: 'courses', label: 'Learn', icon: 'book.fill', route: '/(tabs)/courses' },
   { id: 'explore', label: 'Explore', icon: 'magnifyingglass', route: '/(tabs)/explore' },
-  { id: 'live', label: 'Live Classroom', icon: 'video.fill', route: '/live-classroom' },
+  { id: 'live', label: 'Classroom', icon: 'video.fill', route: '/live-classroom' },
   { id: 'attendance', label: 'Attendance', icon: 'checklist', route: '/attendance' },
-  { id: 'viva-ai', label: 'Viva AI', icon: 'sparkles', route: '/viva-ai' },
+  { id: 'viva-ai', label: 'AI Viva Lab', icon: 'sparkles', route: '/viva-ai' },
   { id: 'shark-ai', label: 'Shark AI', icon: 'chart.line.uptrend.xyaxis', route: '/shark-ai' },
-  { id: 'content-gen', label: 'Content Generator', icon: 'doc.richtext.fill', route: '/content-generator' },
+  { id: 'content-gen', label: 'Pitch Craft', icon: 'doc.richtext.fill', route: '/content-generator' },
   { id: 'incubation', label: 'Incubation Hub', icon: 'building.2.fill', route: '/incubation-hub' },
   { id: 'tools', label: 'AI Tools', icon: 'cpu', route: '/tools/index' },
   { id: 'daily-calendar', label: 'Manage Timetable', icon: 'calendar', route: '/daily-calendar' },
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: DRAWER_WIDTH,
     height: '100%',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: '#f0f5ff',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -359,13 +359,13 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     borderWidth: 2,
-    borderColor: '#1e293b',
+    borderColor: '#d9e3f3',
   },
   avatarPlaceholder: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#1e40af',
+    backgroundColor: '#4f46e5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#f1f5f9',
+    color: '#0f2444',
     marginBottom: 2,
   },
   userRole: {
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '400',
-    color: '#cbd5e1',
+    color: '#12305c',
     letterSpacing: 0.1,
   },
   subNavItem: {
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   },
   bottomDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#d9e3f3',
     marginHorizontal: 16,
     marginBottom: 8,
   },

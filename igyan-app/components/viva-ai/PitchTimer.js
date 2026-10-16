@@ -26,7 +26,7 @@ export default function PitchTimer({ timeLeft, totalTime }) {
       <IconSymbol
         name="timer"
         size={16}
-        color={isCritical ? '#ef4444' : isLow ? '#f59e0b' : '#00abf4'}
+        color={isCritical ? '#ef4444' : isLow ? '#f59e0b' : "#4f46e5"}
       />
       <Text style={[
         styles.time,
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
   },
   time: {
-    color: '#00abf4',
+    color: "#4f46e5",
     fontSize: 15,
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     borderRadius: 2,
   },
   progressLow: {

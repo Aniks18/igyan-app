@@ -10,7 +10,7 @@ export default function FileUploadCard({ onUpload }) {
   return (
     <TouchableOpacity style={styles.container} onPress={onUpload} activeOpacity={0.7}>
       <View style={styles.iconContainer}>
-        <IconSymbol name="doc.badge.plus" size={32} color="#00abf4" />
+        <IconSymbol name="doc.badge.plus" size={32} color="#4f46e5" />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>Upload Business Document</Text>
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     marginHorizontal: 16,
     marginVertical: 8,
     padding: 14,
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: '#f8fafc',
+    color: "#12305c",
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 2,

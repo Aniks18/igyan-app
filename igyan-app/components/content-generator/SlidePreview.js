@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   slideNumberText: {
-    color: '#fff',
+    color: "#12305c",
     fontSize: 16,
     fontWeight: '700',
   },
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   saveText: {
-    color: '#fff',
+    color: "#12305c",
     fontSize: 14,
     fontWeight: '600',
   },

@@ -763,8 +763,8 @@ Return JSON format:
                 style={[styles.actionButton, styles.resetButton]}
                 onPress={handleReset}
               >
-                <IconSymbol name="arrow.counterclockwise" size={20} color="#00abf4" />
-                <Text style={[styles.actionButtonText, { color: '#00abf4' }]}>
+                <IconSymbol name="arrow.counterclockwise" size={20} color="#4f46e5" />
+                <Text style={[styles.actionButtonText, { color: "#4f46e5" }]}>
                   Start Over
                 </Text>
               </TouchableOpacity>
@@ -821,7 +821,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -854,7 +854,7 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   generateButton: {
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -886,7 +886,7 @@ const styles = StyleSheet.create({
   },
   contentTagline: {
     fontSize: 14,
-    color: '#00abf4',
+    color: "#4f46e5",
     fontStyle: 'italic',
   },
   actionButtons: {
@@ -912,7 +912,7 @@ const styles = StyleSheet.create({
   resetButton: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#00abf4',
+    borderColor: "#4f46e5",
   },
   actionButtonText: {
     color: '#fff',
@@ -946,7 +946,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 13,
-    color: '#00abf4',
+    color: "#4f46e5",
     fontWeight: '500',
   },
 });

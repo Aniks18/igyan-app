@@ -24,7 +24,7 @@ export default function Index() {
 
   return (
     <LinearGradient
-      colors={['#0a2434', '#135167', '#00abf4']}
+      colors={['#0a2434', '#135167', "#4f46e5"]}
       style={styles.container}
     >
       <ActivityIndicator size="large" color="#f8fafc" />

@@ -103,7 +103,7 @@ export default function LiveClassroomPage() {
           }}
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#00abf4" />
+              <ActivityIndicator size="large" color="#4f46e5" />
               <Text style={{ marginTop: 12, color: '#666' }}>Loading meeting...</Text>
             </View>
           )}
@@ -192,7 +192,7 @@ export default function LiveClassroomPage() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <IconSymbol name="video.fill" size={48} color="#00abf4" />
+            <IconSymbol name="video.fill" size={48} color="#4f46e5" />
             <Text style={styles.headerTitle}>i-Meet Video Conferencing</Text>
             <Text style={styles.headerSubtitle}>Secure • Fast • Reliable</Text>
           </View>
@@ -332,7 +332,7 @@ export default function LiveClassroomPage() {
         }}
         renderLoading={() => (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#00abf4" />
+            <ActivityIndicator size="large" color="#4f46e5" />
             <Text style={{ marginTop: 12, color: '#666' }}>Loading demo...</Text>
           </View>
         )}
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0a2434',
+    color: "#0f2444",
     marginTop: 12,
     textAlign: 'center',
   },
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#0a2434',
+    color: "#0f2444",
     marginBottom: 8,
   },
   cardDescription: {
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 15,
-    color: '#0a2434',
+    color: "#0f2444",
     marginBottom: 12,
   },
   button: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#7c3aed',
   },
   joinButton: {
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   featuresTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0a2434',
+    color: "#0f2444",
     marginBottom: 16,
   },
   featuresGrid: {
@@ -475,13 +475,13 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 13,
-    color: '#0a2434',
+    color: "#0f2444",
     flex: 1,
   },
   toggleButton: {
     marginTop: 24,
     marginHorizontal: 16,
-    backgroundColor: '#135167',
+    backgroundColor: "#4f46e5",
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   meetingTitle: {
-    color: '#fff',
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: '600',
   },
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   webviewHeader: {
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
     paddingHorizontal: 16,
     paddingVertical: 12,
     flexDirection: 'row',
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   webviewTitle: {
-    color: '#fff',
+    color: "#12305c",
     fontSize: 18,
     fontWeight: 'bold',
   },

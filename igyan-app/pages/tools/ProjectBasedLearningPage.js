@@ -149,7 +149,7 @@ Return ONLY valid JSON.`;
 
   const getDifficultyColor = (difficulty) => {
     if (difficulty === 'Beginner') return { bg: '#10B981' + '20', text: '#10B981' };
-    if (difficulty === 'Intermediate') return { bg: '#3B82F6' + '20', text: '#3B82F6' };
+    if (difficulty === 'Intermediate') return { bg: "#4f46e5" + '20', text: "#4f46e5" };
     return { bg: '#EF4444' + '20', text: '#EF4444' };
   };
 
@@ -374,12 +374,12 @@ Return ONLY valid JSON.`;
             {/* General Tips */}
             {projects.generalTips?.length > 0 && (
               <View style={{
-                backgroundColor: '#3B82F6' + '15',
+                backgroundColor: "#4f46e5" + '15',
                 borderRadius: 16,
                 padding: 16,
                 marginBottom: 16,
                 borderWidth: 1,
-                borderColor: '#3B82F6' + '40',
+                borderColor: "#4f46e5" + '40',
               }}>
                 <ThemedText style={{ fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
                   💡 Learning Tips
@@ -521,7 +521,7 @@ Return ONLY valid JSON.`;
                               width: 24,
                               height: 24,
                               borderRadius: 12,
-                              backgroundColor: '#3B82F6',
+                              backgroundColor: "#4f46e5",
                               alignItems: 'center',
                               justifyContent: 'center',
                               marginRight: 8,

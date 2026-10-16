@@ -28,7 +28,7 @@ export const sideNavStyles = StyleSheet.create({
     left: 0,
     width: DRAWER_WIDTH,
     height: '100%',
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -48,7 +48,7 @@ export const sideNavStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 14,
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     borderBottomRightRadius: 20,
   },
   profileContainer: {
@@ -64,13 +64,13 @@ export const sideNavStyles = StyleSheet.create({
     height: 46,
     borderRadius: 23,
     borderWidth: 2,
-    borderColor: '#00abf4',
+    borderColor: "#4f46e5",
   },
   avatarPlaceholder: {
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -90,7 +90,7 @@ export const sideNavStyles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#22c55e',
     borderWidth: 2,
-    borderColor: '#135167',
+    borderColor: "#d9e3f3",
   },
   userInfo: {
     marginLeft: 12,
@@ -99,12 +99,12 @@ export const sideNavStyles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#f8fafc',
+    color: "#12305c",
     marginBottom: 2,
   },
   userRole: {
     fontSize: 12,
-    color: '#00abf4',
+    color: "#4f46e5",
     fontWeight: '500',
   },
   closeButton: {
@@ -118,7 +118,7 @@ export const sideNavStyles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     marginHorizontal: 14,
     marginVertical: 6,
   },
@@ -147,7 +147,7 @@ export const sideNavStyles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '500',
-    color: '#f8fafc',
+    color: "#12305c",
   },
   spacer: {
     flex: 1,
@@ -171,7 +171,7 @@ export const sideNavStyles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#135167',
+    borderTopColor: "#d9e3f3",
     marginHorizontal: 14,
   },
   footerText: {

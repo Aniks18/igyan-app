@@ -195,15 +195,15 @@ Provide ONLY valid JSON, no additional commentary.`;
             <TouchableOpacity
               onPress={resetForm}
               style={{
-                backgroundColor: '#3B82F6' + '20',
+                backgroundColor: "#4f46e5" + '20',
                 paddingHorizontal: 12,
                 paddingVertical: 8,
                 borderRadius: 8,
                 borderWidth: 1,
-                borderColor: '#3B82F6',
+                borderColor: "#4f46e5",
               }}
             >
-              <ThemedText style={{ fontSize: 13, fontWeight: '600', color: '#3B82F6' }}>
+              <ThemedText style={{ fontSize: 13, fontWeight: '600', color: "#4f46e5" }}>
                 New Guide
               </ThemedText>
             </TouchableOpacity>
@@ -292,14 +292,14 @@ Provide ONLY valid JSON, no additional commentary.`;
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 10,
-                        backgroundColor: formData.audience === option.value ? '#3B82F6' + '15' : 'transparent',
+                        backgroundColor: formData.audience === option.value ? "#4f46e5" + '15' : 'transparent',
                         borderBottomWidth: 1,
                         borderBottomColor: borderColor,
                       }}
                     >
                       <ThemedText style={{ 
                         fontSize: 14,
-                        color: formData.audience === option.value ? '#3B82F6' : textColor,
+                        color: formData.audience === option.value ? "#4f46e5" : textColor,
                         fontWeight: formData.audience === option.value ? '600' : '400',
                       }}>
                         {option.label}
@@ -327,14 +327,14 @@ Provide ONLY valid JSON, no additional commentary.`;
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 10,
-                        backgroundColor: formData.timeframe === option ? '#3B82F6' + '15' : 'transparent',
+                        backgroundColor: formData.timeframe === option ? "#4f46e5" + '15' : 'transparent',
                         borderBottomWidth: 1,
                         borderBottomColor: borderColor,
                       }}
                     >
                       <ThemedText style={{ 
                         fontSize: 14,
-                        color: formData.timeframe === option ? '#3B82F6' : textColor,
+                        color: formData.timeframe === option ? "#4f46e5" : textColor,
                         fontWeight: formData.timeframe === option ? '600' : '400',
                       }}>
                         {option}
@@ -357,9 +357,9 @@ Provide ONLY valid JSON, no additional commentary.`;
                     onPress={() => handleInputChange('detailLevel', option.value)}
                     style={{
                       flex: 1,
-                      backgroundColor: formData.detailLevel === option.value ? '#3B82F6' : cardColor,
+                      backgroundColor: formData.detailLevel === option.value ? "#4f46e5" : cardColor,
                       borderWidth: 1,
-                      borderColor: formData.detailLevel === option.value ? '#3B82F6' : borderColor,
+                      borderColor: formData.detailLevel === option.value ? "#4f46e5" : borderColor,
                       borderRadius: 12,
                       paddingVertical: 12,
                       alignItems: 'center',
@@ -412,7 +412,7 @@ Provide ONLY valid JSON, no additional commentary.`;
               onPress={handleSubmit}
               disabled={!formData.topic.trim()}
               style={{
-                backgroundColor: !formData.topic.trim() ? '#999' : '#3B82F6',
+                backgroundColor: !formData.topic.trim() ? '#999' : "#4f46e5",
                 borderRadius: 12,
                 paddingVertical: 16,
                 alignItems: 'center',
@@ -434,7 +434,7 @@ Provide ONLY valid JSON, no additional commentary.`;
             borderWidth: 1,
             borderColor: borderColor,
           }}>
-            <ActivityIndicator size="large" color="#3B82F6" />
+            <ActivityIndicator size="large" color="#4f46e5" />
             <ThemedText style={{ marginTop: 16, fontSize: 15, color: '#999' }}>
               AI is composing your personalized blueprint...
             </ThemedText>
@@ -460,12 +460,12 @@ Provide ONLY valid JSON, no additional commentary.`;
               </ThemedText>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 <View style={{
-                  backgroundColor: '#3B82F6' + '20',
+                  backgroundColor: "#4f46e5" + '20',
                   paddingHorizontal: 12,
                   paddingVertical: 6,
                   borderRadius: 8,
                 }}>
-                  <ThemedText style={{ fontSize: 12, fontWeight: '600', color: '#3B82F6' }}>
+                  <ThemedText style={{ fontSize: 12, fontWeight: '600', color: "#4f46e5" }}>
                     {guide.overview?.estimatedDuration}
                   </ThemedText>
                 </View>
@@ -546,7 +546,7 @@ Provide ONLY valid JSON, no additional commentary.`;
                       width: 32,
                       height: 32,
                       borderRadius: 16,
-                      backgroundColor: '#3B82F6',
+                      backgroundColor: "#4f46e5",
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 12,
@@ -575,7 +575,7 @@ Provide ONLY valid JSON, no additional commentary.`;
 
                   {step.actions?.length > 0 && (
                     <View style={{
-                      backgroundColor: '#3B82F6' + '10',
+                      backgroundColor: "#4f46e5" + '10',
                       borderRadius: 12,
                       padding: 12,
                       marginBottom: 12,

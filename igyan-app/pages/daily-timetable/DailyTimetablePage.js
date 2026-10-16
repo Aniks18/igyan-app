@@ -35,9 +35,9 @@ const ADMIN_ROLES = ['super_admin', 'co_admin'];
 const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const C = {
-  bg: '#0a0f1a', surface: '#111827', surfaceAlt: '#1a2236',
-  accent: '#3b82f6', accentDim: 'rgba(59,130,246,0.10)',
-  text: '#e2e8f0', muted: '#64748b', dim: '#475569', border: '#1e293b',
+  bg: "#f5f8ff", surface: "#ffffff", surfaceAlt: "#f0f5ff",
+  accent: "#4f46e5", accentDim: 'rgba(59,130,246,0.10)',
+  text: "#12305c", muted: "#476b9c", dim: "#476b9c", border: "#d9e3f3",
   green: '#22c55e', greenDim: 'rgba(34,197,94,0.10)',
   amber: '#f59e0b', amberDim: 'rgba(245,158,11,0.10)',
   red: '#ef4444', redDim: 'rgba(239,68,68,0.10)',

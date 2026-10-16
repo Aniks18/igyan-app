@@ -89,7 +89,7 @@ export default function CourseViewerScreen() {
           <TouchableOpacity
             style={[
               styles.langButton,
-              selectedLanguage === 'english' && { backgroundColor: '#1E88E5' }
+              selectedLanguage === 'english' && { backgroundColor: "#4f46e5" }
             ]}
             onPress={() => setSelectedLanguage('english')}
           >
@@ -103,7 +103,7 @@ export default function CourseViewerScreen() {
           <TouchableOpacity
             style={[
               styles.langButton,
-              selectedLanguage === 'hindi' && { backgroundColor: '#1E88E5' }
+              selectedLanguage === 'hindi' && { backgroundColor: "#4f46e5" }
             ]}
             onPress={() => setSelectedLanguage('hindi')}
           >
@@ -140,7 +140,7 @@ export default function CourseViewerScreen() {
                   style={[
                     styles.moduleItem,
                     { backgroundColor: backgroundColor },
-                    currentModule === num && { borderColor: '#1E88E5', borderWidth: 2 }
+                    currentModule === num && { borderColor: "#4f46e5", borderWidth: 2 }
                   ]}
                   onPress={() => {
                     setCurrentModule(num);
@@ -149,7 +149,7 @@ export default function CourseViewerScreen() {
                 >
                   <View style={[
                     styles.moduleIcon,
-                    { backgroundColor: currentModule === num ? '#1E88E5' : '#E0E0E0' }
+                    { backgroundColor: currentModule === num ? "#4f46e5" : '#E0E0E0' }
                   ]}>
                     <ThemedText style={{ fontSize: 24 }}>
                       {num === 1 ? '📄' : num === 2 ? '🗺️' : '🎥'}
@@ -219,7 +219,7 @@ export default function CourseViewerScreen() {
               key={num}
               style={[
                 styles.dot,
-                { backgroundColor: currentModule === num ? '#1E88E5' : '#E0E0E0' }
+                { backgroundColor: currentModule === num ? "#4f46e5" : '#E0E0E0' }
               ]}
             />
           ))}
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
   },
   contentArea: {
     flex: 1,

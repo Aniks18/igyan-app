@@ -12,7 +12,7 @@ import { useSideNav } from '../../utils/SideNavContext';
 import { useAuth } from '../../utils/AuthContext';
 import { getConversations, getOrCreateConversation, getAvailableContacts } from '../../services/messagingService';
 
-const C = { bg: '#0a0f1a', surface: '#111827', border: '#1e293b', accent: '#3b82f6', green: '#22c55e', amber: '#f59e0b', red: '#ef4444', text: '#e2e8f0', muted: '#64748b', dim: '#334155' };
+const C = { bg: "#f5f8ff", surface: "#ffffff", border: "#d9e3f3", accent: "#4f46e5", green: '#22c55e', amber: '#f59e0b', red: '#ef4444', text: "#12305c", muted: "#476b9c", dim: "#476b9c" };
 
 function timeAgo(date) {
   if (!date) return '';
@@ -33,7 +33,7 @@ function getInitials(name) {
   return parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : parts[0][0].toUpperCase();
 }
 
-const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e', '#06b6d4', '#6366f1'];
+const AVATAR_COLORS = ["#4f46e5", '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e', '#06b6d4', '#6366f1'];
 function pickColor(str) { let h = 0; for (let i = 0; i < (str || '').length; i++) h = str.charCodeAt(i) + ((h << 5) - h); return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]; }
 
 export default function ChatListPage() {

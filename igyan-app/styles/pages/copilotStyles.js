@@ -128,7 +128,7 @@ export const copilotStyles = StyleSheet.create({
     elevation: 6,
   },
   setupProfileText: {
-    color: '#FFF',
+    color: "#12305c",
     fontSize: 15,
     fontWeight: '700',
   },
@@ -321,7 +321,7 @@ export const copilotStyles = StyleSheet.create({
     lineHeight: 24,
   },
   userMessageText: {
-    color: '#FFF',
+    color: "#12305c",
   },
   
   // Typing Indicator

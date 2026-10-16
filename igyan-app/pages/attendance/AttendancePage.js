@@ -339,7 +339,7 @@ export default function AttendancePage() {
               
               {/* Date Display */}
               <View style={styles.dateContainer}>
-                <IconSymbol name="calendar" size={20} color="#00abf4" />
+                <IconSymbol name="calendar" size={20} color="#4f46e5" />
                 <Text style={styles.dateText}>
                   {new Date(selectedDate).toLocaleDateString('en-US', {
                     weekday: 'long',
@@ -409,9 +409,9 @@ export default function AttendancePage() {
             {/* Statistics */}
             {stats && filteredStudents.length > 0 && (
               <View style={styles.statsContainer}>
-                <View style={[styles.statCard, { backgroundColor: '#3b82f620' }]}>
-                  <IconSymbol name="person.3.fill" size={24} color="#3b82f6" />
-                  <Text style={[styles.statValue, { color: '#3b82f6' }]}>{stats.total}</Text>
+                <View style={[styles.statCard, { backgroundColor: "#4f46e520" }]}>
+                  <IconSymbol name="person.3.fill" size={24} color="#4f46e5" />
+                  <Text style={[styles.statValue, { color: "#4f46e5" }]}>{stats.total}</Text>
                   <Text style={styles.statLabel}>Total</Text>
                 </View>
                 <View style={[styles.statCard, { backgroundColor: '#10b98120' }]}>
@@ -624,7 +624,7 @@ export default function AttendancePage() {
                         <Text style={styles.historyStatLabel}>Absent</Text>
                       </View>
                       <View style={styles.historyStatItem}>
-                        <Text style={[styles.historyStatValue, { color: '#3b82f6' }]}>
+                        <Text style={[styles.historyStatValue, { color: "#4f46e5" }]}>
                           {recordStats.total > 0
                             ? ((recordStats.present / recordStats.total) * 100).toFixed(0)
                             : 0}%
@@ -670,7 +670,7 @@ export default function AttendancePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
   },
   scrollView: {
     flex: 1,
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   tabActive: {
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
   },
   tabText: {
     fontSize: 14,
@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
     fontWeight: '500',
-    color: '#00abf4',
+    color: "#4f46e5",
   },
   selectorRow: {
     flexDirection: 'row',
@@ -858,8 +858,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.2)',
   },
   selectorChipActive: {
-    backgroundColor: '#00abf4',
-    borderColor: '#00abf4',
+    backgroundColor: "#4f46e5",
+    borderColor: "#4f46e5",
   },
   selectorChipText: {
     fontSize: 13,
@@ -956,7 +956,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -972,7 +972,7 @@ const styles = StyleSheet.create({
   studentName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fff',
+    color: "#12305c",
   },
   studentRegNo: {
     fontSize: 12,
@@ -1020,7 +1020,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -1073,7 +1073,7 @@ const styles = StyleSheet.create({
   historyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: "#12305c",
   },
   historySubtitle: {
     fontSize: 12,

@@ -41,7 +41,7 @@ export default function LessonScreen() {
         {/* Navigation Buttons */}
         <View style={styles.navButtons}>
           <TouchableOpacity style={styles.navButton}>
-            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={20} color="#00abf4" />
+            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={20} color="#4f46e5" />
             <ThemedText style={styles.navButtonText}>Previous</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.navButton, styles.nextButton]}>
@@ -94,16 +94,16 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#1E88E5',
+    borderColor: "#4f46e5",
   },
   navButtonText: {
     marginLeft: 8,
-    color: '#1E88E5',
+    color: "#4f46e5",
     fontWeight: '600',
   },
   nextButton: {
-    backgroundColor: '#1E88E5',
-    borderColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
+    borderColor: "#4f46e5",
   },
   nextButtonText: {
     color: '#FFFFFF',

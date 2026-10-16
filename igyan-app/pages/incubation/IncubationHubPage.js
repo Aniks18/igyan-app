@@ -151,7 +151,7 @@ export default function IncubationHubPage() {
 
         {/* Stats Badge */}
         <View style={styles.statsBadge}>
-          <IconSymbol name="building.columns.fill" size={18} color="#00abf4" />
+          <IconSymbol name="building.columns.fill" size={18} color="#4f46e5" />
           <Text style={styles.statsBadgeText}>{filteredIncubators.length} programs listed</Text>
         </View>
 
@@ -211,7 +211,7 @@ export default function IncubationHubPage() {
                   <View key={incubator.name} style={[styles.incubatorCard, { backgroundColor: cardColor }]}>
                     <View style={styles.incubatorInfo}>
                       <View style={styles.incubatorIconContainer}>
-                        <IconSymbol name="building.2.fill" size={20} color="#00abf4" />
+                        <IconSymbol name="building.2.fill" size={20} color="#4f46e5" />
                       </View>
                       <View style={styles.incubatorDetails}>
                         <Text style={styles.incubatorName} numberOfLines={2}>
@@ -228,7 +228,7 @@ export default function IncubationHubPage() {
                           onPress={() => openUrl(url)}
                         >
                           <Text style={styles.visitButtonText}>Visit Portal</Text>
-                          <IconSymbol name="arrow.up.right" size={12} color="#00abf4" />
+                          <IconSymbol name="arrow.up.right" size={12} color="#4f46e5" />
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -254,7 +254,7 @@ export default function IncubationHubPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a2434',
+    backgroundColor: "#f5f8ff",
   },
   scrollView: {
     flex: 1,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   statsBadgeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#00abf4',
+    color: "#4f46e5",
   },
   searchSection: {
     borderRadius: 16,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 14,
-    color: '#fff',
+    color: "#12305c",
   },
   regionSection: {
     marginBottom: 24,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   regionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#fff',
+    color: "#12305c",
   },
   regionBadge: {
     backgroundColor: 'rgba(0, 171, 244, 0.15)',
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   regionBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#00abf4',
+    color: "#4f46e5",
     textTransform: 'uppercase',
   },
   cardsContainer: {
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   incubatorName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fff',
+    color: "#12305c",
     marginBottom: 2,
   },
   incubatorRegion: {
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   visitButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#00abf4',
+    color: "#4f46e5",
   },
   emptyState: {
     padding: 40,

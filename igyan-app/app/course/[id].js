@@ -53,7 +53,7 @@ export default function CourseDetailScreen() {
           onBackPress={() => router.back()} 
         />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#00abf4" />
+          <ActivityIndicator size="large" color="#4f46e5" />
           <ThemedText style={{ marginTop: 16 }}>Loading course...</ThemedText>
         </View>
       </ThemedView>
@@ -159,7 +159,7 @@ export default function CourseDetailScreen() {
           {/* Course Stats */}
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <IconSymbol name="clock.fill" size={20} color="#1E88E5" />
+              <IconSymbol name="clock.fill" size={20} color="#4f46e5" />
               <ThemedText style={styles.statText}>{course.duration}</ThemedText>
             </View>
             <View style={styles.statItem}>
@@ -180,7 +180,7 @@ export default function CourseDetailScreen() {
               ]}
             >
               <View style={styles.lessonNumber}>
-                <IconSymbol name={module.icon} size={24} color="#1E88E5" />
+                <IconSymbol name={module.icon} size={24} color="#4f46e5" />
               </View>
               <View style={{ flex: 1 }}>
                 <ThemedText style={styles.lessonTitle}>{module.title}</ThemedText>
@@ -197,11 +197,11 @@ export default function CourseDetailScreen() {
           {/* Start Course Button */}
           <TouchableOpacity
             style={{
-              backgroundColor: '#1E88E5',
+              backgroundColor: "#4f46e5",
               padding: 16,
               borderRadius: 16,
               marginTop: 20,
-              shadowColor: '#1E88E5',
+              shadowColor: "#4f46e5",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   headerImage: {
     width: '100%',
     height: 200,
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
   },
   content: {
     padding: 16,
@@ -286,13 +286,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#1E88E510',
+    backgroundColor: "#4f46e510",
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   lessonNumberText: {
-    color: '#1E88E5',
+    color: "#4f46e5",
     fontWeight: 'bold',
   },
   lessonTitle: {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   categoryBadge: {
-    backgroundColor: '#1E88E520',
+    backgroundColor: "#4f46e520",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryText: {
-    color: '#1E88E5',
+    color: "#4f46e5",
     fontSize: 14,
     fontWeight: '600',
   },
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   languageButtonActive: {
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
   },
   languageButtonText: {
     fontSize: 14,
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
   },
   enrollButton: {
-    backgroundColor: '#1E88E5',
+    backgroundColor: "#4f46e5",
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',

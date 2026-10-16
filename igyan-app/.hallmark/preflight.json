@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-16",
+  "mode": "reference-adaptation",
+  "framework": "Expo React Native",
+  "font": "native system sans",
+  "spacing": "existing native 8-point scale",
+  "reference": "https://github.com/Aniks18/IGYAAN/tree/8990825a6d1a5715bc6ff90b5b6900aa53ccbea0/igyan-mvp",
+  "palette": "reference white surfaces, blue login accents, indigo dashboard accents",
+  "structure": "reference portal selector, sign-in form, dashboard hero and launchpad",
+  "navigation": "existing native tabs and drawer retained"
+}

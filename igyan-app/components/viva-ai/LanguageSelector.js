@@ -46,7 +46,7 @@ export default function LanguageSelector({ language, onLanguageChange, disabled 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#135167',
+    backgroundColor: "#ffffff",
     borderRadius: 20,
     padding: 3,
   },
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
   },
   optionActive: {
-    backgroundColor: '#00abf4',
+    backgroundColor: "#4f46e5",
   },
   optionText: {
     color: '#7a8b9c',

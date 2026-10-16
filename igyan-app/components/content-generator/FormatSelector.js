@@ -27,7 +27,7 @@ const formats = [
     name: 'Shark Pitch',
     description: 'Investor deck',
     icon: 'briefcase.fill',
-    color: '#3B82F6',
+    color: "#4f46e5",
     isNew: true,
   },
 ];
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   newText: {
-    color: '#fff',
+    color: "#12305c",
     fontSize: 9,
     fontWeight: '700',
   },

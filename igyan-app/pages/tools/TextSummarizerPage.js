@@ -274,14 +274,14 @@ Summary:`;
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 6,
-                  backgroundColor: '#3B82F6' + '20',
+                  backgroundColor: "#4f46e5" + '20',
                   paddingHorizontal: 12,
                   paddingVertical: 6,
                   borderRadius: 8,
                 }}
               >
-                <IconSymbol name="doc.on.doc" size={16} color="#3B82F6" />
-                <ThemedText style={{ fontSize: 13, fontWeight: '600', color: '#3B82F6' }}>
+                <IconSymbol name="doc.on.doc" size={16} color="#4f46e5" />
+                <ThemedText style={{ fontSize: 13, fontWeight: '600', color: "#4f46e5" }}>
                   Copy
                 </ThemedText>
               </TouchableOpacity>
@@ -295,26 +295,26 @@ Summary:`;
 
         {/* Info */}
         <View style={{
-          backgroundColor: '#3B82F6' + '10',
+          backgroundColor: "#4f46e5" + '10',
           borderRadius: 12,
           padding: 16,
           marginTop: 20,
           borderWidth: 1,
-          borderColor: '#3B82F6' + '30',
+          borderColor: "#4f46e5" + '30',
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'start', gap: 12 }}>
             <View style={{
               width: 32,
               height: 32,
               borderRadius: 16,
-              backgroundColor: '#3B82F6',
+              backgroundColor: "#4f46e5",
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <IconSymbol name="lightbulb.fill" size={18} color="#FFF" />
             </View>
             <View style={{ flex: 1 }}>
-              <ThemedText style={{ fontSize: 14, fontWeight: '700', marginBottom: 6, color: '#3B82F6' }}>
+              <ThemedText style={{ fontSize: 14, fontWeight: '700', marginBottom: 6, color: "#4f46e5" }}>
                 Pro Tip
               </ThemedText>
               <ThemedText style={{ fontSize: 13, lineHeight: 20, color: '#999' }}>
