@@ -4,8 +4,9 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import BrandLogo from '../components/BrandLogo';
 import { IconSymbol } from '../components/IconSymbol';
 
 export default function WelcomeScreen() {
@@ -44,11 +45,7 @@ export default function WelcomeScreen() {
           },
         ]}
       >
-        <Image
-          source={require('../assets/brand/igyan-ai-mark.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
+        <BrandLogo variant="hero" />
       </Animated.View>
 
       {/* Welcome Message */}

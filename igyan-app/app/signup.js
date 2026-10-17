@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { router } from 'expo-router';
+import BrandLogo from '../components/BrandLogo';
 import { IconSymbol } from '../components/IconSymbol';
 
 export default function SignupScreen() {
@@ -13,9 +14,9 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const [notice, setNotice] = useState('');
   const handleSignup = () => {
-    // Handle signup logic here
-    router.replace('/(tabs)/home');
+    setNotice('This is a preview. Account creation is not connected yet.');
   };
 
   return (
@@ -32,15 +33,14 @@ export default function SignupScreen() {
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.logo}>
-              <IconSymbol name="star.fill" size={32} color="#f8fafc" />
-            </View>
+            <BrandLogo variant="card" style={styles.logo} />
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Start your learning journey today!</Text>
           </View>
 
           {/* Signup Form */}
           <View style={styles.form}>
+            {!!notice && <Text accessibilityLiveRegion="polite" style={styles.notice}>{notice}</Text>}
             <View style={styles.inputContainer}>
               <IconSymbol name="person.fill" size={20} color="#4f46e5" />
               <TextInput
@@ -100,7 +100,7 @@ export default function SignupScreen() {
               <View style={styles.dividerLine} />
             </View>
 
-            <TouchableOpacity style={styles.socialButton}>
+            <TouchableOpacity accessibilityRole="button" style={styles.socialButton} onPress={() => setNotice('This is a preview. Google sign-in is not connected yet.')}>
               <IconSymbol name="paperplane.fill" size={20} color="#f8fafc" />
               <Text style={styles.socialButtonText}>Continue with Google</Text>
             </TouchableOpacity>
@@ -123,6 +123,14 @@ export default function SignupScreen() {
 }
 
 const styles = StyleSheet.create({
+  notice: {
+    color: '#12305c',
+    backgroundColor: '#f0f5ff',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f8ff",
@@ -144,8 +152,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,

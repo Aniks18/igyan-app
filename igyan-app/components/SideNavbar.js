@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BrandLogo from './BrandLogo';
 import { IconSymbol } from './IconSymbol';
 import { useAuth } from '../utils/AuthContext';
 import { supabase } from '../utils/supabase';
@@ -190,6 +191,7 @@ export default function SideNavbar({ isOpen, onClose }) {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
+            <BrandLogo variant="sidebar" />
             <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
               <IconSymbol name="xmark" size={18} color="#94a3b8" />
             </TouchableOpacity>
@@ -337,7 +339,8 @@ const styles = StyleSheet.create({
   },
   headerTop: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
   closeButton: {

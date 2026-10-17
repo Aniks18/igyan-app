@@ -13,6 +13,7 @@ import {
   Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BrandLogo from './BrandLogo';
 import { IconSymbol } from './IconSymbol';
 import { useAuth } from '../utils/AuthContext';
 
@@ -48,6 +49,8 @@ export default function Header({
           {showBack ? (
             <TouchableOpacity 
               style={styles.iconButton} 
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
               onPress={onBackPress}
               activeOpacity={0.7}
             >
@@ -56,6 +59,8 @@ export default function Header({
           ) : (
             <TouchableOpacity 
               style={styles.iconButton} 
+              accessibilityRole="button"
+              accessibilityLabel="Open navigation"
               onPress={onMenuPress}
               activeOpacity={0.7}
             >
@@ -66,8 +71,8 @@ export default function Header({
 
         {/* Center - School Icon + Title */}
         <View style={styles.centerSection}>
-          <IconSymbol name="graduationcap.fill" size={20} color="#4f46e5" />
-          <Text style={styles.title} numberOfLines={1}>{title}</Text>
+          <BrandLogo size={28} />
+          <Text style={[styles.title, { flexShrink: 1 }]} numberOfLines={1}>{title}</Text>
         </View>
 
         {/* Right Section */}
@@ -84,7 +89,9 @@ export default function Header({
               {/* Profile/Menu Button */}
               <TouchableOpacity 
                 style={styles.profileButton} 
-                onPress={onMenuPress}
+                accessibilityRole="button"
+              accessibilityLabel="Open navigation"
+              onPress={onMenuPress}
                 activeOpacity={0.7}
               >
                 {user?.avatar_url ? (

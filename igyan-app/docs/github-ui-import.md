@@ -103,3 +103,24 @@ The source is Next.js; the destination is an existing Expo / React Native app. T
 | `/register/launch-pad` | `/signup` |
 | `/shark-ai` | `/shark-ai` |
 | `/success-stories` | No native equivalent |
+
+## Follow-up: shared mobile branding
+
+The in-app logo now has one owner, `components/BrandLogo.js`, used by welcome,
+workspace selection, sign-in, signup, the shared header, and the navigation drawer.
+The imported PNG is byte-identical to the reference web asset. Signup and the
+header now show that mark in place of generic star and graduation-cap branding.
+`DESIGN.md` records the source and native size mapping. Launcher/native splash
+assets and existing registration behavior are outside this branding pass.
+
+Validation for this follow-up: static JSX parsing, local import/asset resolution,
+and `git diff --check`. Simulator build and visual checks are pending.
+
+
+## Static authentication preview
+
+Login and signup are UI-only previews. Inputs and password visibility remain
+interactive, and links still navigate between authentication pages. Sign-in,
+Create Account, and Google sign-in show a preview message without API calls,
+session changes, or dashboard navigation. Existing authentication services are
+retained for later integration.

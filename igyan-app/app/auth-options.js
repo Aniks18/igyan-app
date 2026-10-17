@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { IconSymbol } from '../components/IconSymbol';
+import BrandLogo from '../components/BrandLogo';
 import { githubUI as c } from '../constants/githubUI';
 
 const options = [
@@ -14,7 +15,7 @@ export default function AuthOptionsScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.brand}><Image source={require('../assets/brand/igyan-ai-mark.png')} style={styles.logo} /><Text style={styles.brandName}>IGYAN AI</Text></View>
+        <BrandLogo size={52} showName style={styles.brand} />
         <Text style={styles.eyebrow}>WELCOME BACK</Text>
         <Text accessibilityRole="header" style={styles.title}>Choose your sign-in experience.</Text>
         <Text style={styles.description}>Select the workspace that best matches how you learn, lead, and grow with IGYAN AI.</Text>
