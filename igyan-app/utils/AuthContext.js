@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getSessionToken, setSessionToken, removeSessionToken } from './secureSession';
 import { supabase } from './supabase';
 import { hashPassword, generateToken, getDeviceInfo, getUserIP } from './crypto';
 
@@ -13,6 +13,11 @@ const AuthContext = createContext();
 // Role definitions
 const INSTITUTIONAL_ROLES = ['super_admin', 'co_admin', 'student', 'faculty', 'parent'];
 const PROFESSIONAL_ROLES = ['b2c_student', 'b2c_mentor'];
+
+// Roles a user may self-select at signup. Elevated roles (admins, faculty,
+// mentors) must be assigned by an existing privileged user, never by the
+// registrant. This is defense-in-depth alongside server-side checks.
+const SELF_SIGNUP_ROLES = ['student', 'b2c_student'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -29,7 +34,7 @@ export function AuthProvider({ children }) {
    */
   const checkSession = async () => {
     try {
-      const sessionToken = await AsyncStorage.getItem('session_token');
+      const sessionToken = await getSessionToken();
       if (!sessionToken) {
         setLoading(false);
         return;
@@ -44,7 +49,7 @@ export function AuthProvider({ children }) {
         .single();
 
       if (error || !sessionData) {
-        await AsyncStorage.removeItem('session_token');
+        await removeSessionToken();
         setLoading(false);
         return;
       }
@@ -55,11 +60,16 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      // Update last activity
-      await supabase
-        .from('sessions')
-        .update({ last_activity_at: new Date().toISOString() })
-        .eq('id', sessionData.id);
+      // Update last activity. Best-effort only: an offline or failed
+      // heartbeat must not invalidate an otherwise valid session.
+      try {
+        await supabase
+          .from('sessions')
+          .update({ last_activity_at: new Date().toISOString() })
+          .eq('id', sessionData.id);
+      } catch (heartbeatError) {
+        console.warn('Session heartbeat failed:', heartbeatError);
+      }
 
       setUser(sessionData.users);
       setSession(sessionData);
@@ -142,8 +152,8 @@ export function AuthProvider({ children }) {
         throw sessionError;
       }
 
-      // 7. Store session token locally
-      await AsyncStorage.setItem('session_token', sessionToken);
+      // 7. Store session token locally (encrypted store)
+      await setSessionToken(sessionToken);
 
       // 8. Update state
       setUser(userData);
@@ -161,23 +171,29 @@ export function AuthProvider({ children }) {
    */
   const logout = async () => {
     try {
-      const sessionToken = await AsyncStorage.getItem('session_token');
+      const sessionToken = await getSessionToken();
       if (sessionToken) {
-        // Mark session as inactive
-        await supabase
-          .from('sessions')
-          .update({
-            is_active: false,
-            logout_at: new Date().toISOString()
-          })
-          .eq('session_token', sessionToken);
+        // Mark session as inactive. A network failure here must not trap
+        // the user in a stale-token loop, so the local token is always
+        // cleared in the finally block below.
+        try {
+          await supabase
+            .from('sessions')
+            .update({
+              is_active: false,
+              logout_at: new Date().toISOString()
+            })
+            .eq('session_token', sessionToken);
+        } catch (serverError) {
+          console.warn('Server session deactivation failed:', serverError);
+        }
       }
-
-      await AsyncStorage.removeItem('session_token');
-      setUser(null);
-      setSession(null);
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      await removeSessionToken();
+      setUser(null);
+      setSession(null);
     }
   };
 
@@ -188,6 +204,13 @@ export function AuthProvider({ children }) {
     try {
       const passwordHash = await hashPassword(userData.password);
 
+      // Never trust a client-supplied role: coerce anything outside the
+      // self-signup allowlist down to the least-privilege default.
+      const requestedRole = userData.role;
+      const safeRole = SELF_SIGNUP_ROLES.includes(requestedRole)
+        ? requestedRole
+        : 'student';
+
       const { data, error } = await supabase
         .from('users')
         .insert([
@@ -196,7 +219,7 @@ export function AuthProvider({ children }) {
             password_hash: passwordHash,
             full_name: userData.fullName,
             phone: userData.phone,
-            role: userData.role,
+            role: safeRole,
             school_id: userData.schoolId || null
           }
         ])

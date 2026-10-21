@@ -4,9 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -28,6 +27,8 @@ export default function LiveClassroomPage() {
   const [joinRoomId, setJoinRoomId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showNativeView, setShowNativeView] = useState(true);
+  const [createError, setCreateError] = useState('');
+  const [joinError, setJoinError] = useState('');
 
   // Check access
   if (!user || !ALLOWED_ROLES.includes(user.role)) {
@@ -36,14 +37,12 @@ export default function LiveClassroomPage() {
         <Header 
           title="Live Classroom" 
           onMenuPress={openSideNav} 
-          showBack 
-          onBackPress={() => router.back()} 
         />
         <View style={styles.accessDenied}>
-          <IconSymbol name="xmark.circle.fill" size={64} color="#ff5252" />
+          <IconSymbol name="xmark.circle.fill" size={64} color="#ef4444" />
           <Text style={styles.accessDeniedTitle}>Access Denied</Text>
           <Text style={styles.accessDeniedText}>
-            You don't have permission to access this feature.
+            {"You don't have permission to access this feature."}
           </Text>
         </View>
       </ThemedView>
@@ -70,6 +69,8 @@ export default function LiveClassroomPage() {
               setInMeeting(false);
               setCurrentRoomId(null);
             }}
+            accessibilityRole="button"
+            accessibilityLabel="Leave meeting"
           >
             <Text style={styles.leaveButtonText}>Leave</Text>
           </TouchableOpacity>
@@ -77,6 +78,7 @@ export default function LiveClassroomPage() {
         <WebView
           source={{ uri: meetingUrl }}
           style={styles.webview}
+          accessibilityLabel="Live meeting video view"
           mediaPlaybackRequiresUserAction={false}
           allowsInlineMediaPlayback={true}
           javaScriptEnabled={true}
@@ -104,7 +106,7 @@ export default function LiveClassroomPage() {
           renderLoading={() => (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#4f46e5" />
-              <Text style={{ marginTop: 12, color: '#666' }}>Loading meeting...</Text>
+              <Text style={{ marginTop: 12, color: "#476b9c" }}>Loading meeting...</Text>
             </View>
           )}
         />
@@ -113,10 +115,12 @@ export default function LiveClassroomPage() {
   }
 
   const handleCreateMeeting = async () => {
+    if (isLoading) return;
     if (!roomName.trim()) {
-      Alert.alert('Error', 'Please enter a meeting name');
+      setCreateError('Enter a meeting name to start.');
       return;
     }
+    setCreateError('');
 
     setIsLoading(true);
 
@@ -145,17 +149,19 @@ export default function LiveClassroomPage() {
       setCurrentRoomId(roomId);
       setInMeeting(true);
     } catch (err) {
-      Alert.alert('Error', err.message || 'Failed to create meeting');
+      setCreateError(err.message || 'Could not create the meeting. Try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleJoinMeeting = async () => {
+    if (isLoading) return;
     if (!joinRoomId.trim()) {
-      Alert.alert('Error', 'Please enter a meeting code');
+      setJoinError('Enter the meeting code to join.');
       return;
     }
+    setJoinError('');
 
     setIsLoading(true);
 
@@ -173,7 +179,7 @@ export default function LiveClassroomPage() {
       setCurrentRoomId(roomId);
       setInMeeting(true);
     } catch (err) {
-      Alert.alert('Error', err.message || 'Failed to join meeting');
+      setJoinError(err.message || 'Could not join the meeting. Check the code and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -186,8 +192,6 @@ export default function LiveClassroomPage() {
         <Header 
           title="Live Classroom" 
           onMenuPress={openSideNav} 
-          showBack 
-          onBackPress={() => router.back()} 
         />
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
@@ -201,79 +205,99 @@ export default function LiveClassroomPage() {
           <View style={styles.cardsContainer}>
             {/* Create Meeting Card */}
             <View style={styles.card}>
-              <Text style={styles.cardEmoji}>🎥</Text>
+              <IconSymbol name="video.fill" size={40} color="#4f46e5" />
               <Text style={styles.cardTitle}>Create Meeting</Text>
               <Text style={styles.cardDescription}>Start a new video conference instantly</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, createError && styles.inputInvalid]}
                 placeholder="Enter meeting name..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#476b9c"
                 value={roomName}
-                onChangeText={setRoomName}
+                onChangeText={value => { setRoomName(value); if (createError) setCreateError(''); }}
                 editable={!isLoading}
+                accessibilityLabel="Meeting name"
+                returnKeyType="go"
+                onSubmitEditing={handleCreateMeeting}
               />
+              {createError ? <Text accessibilityLiveRegion="polite" style={styles.inlineError}>{createError}</Text> : null}
               <TouchableOpacity
                 style={[styles.button, styles.createButton, (!roomName.trim() || isLoading) && styles.buttonDisabled]}
                 onPress={handleCreateMeeting}
                 disabled={!roomName.trim() || isLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Create new meeting"
+                accessibilityState={{ disabled: !roomName.trim() || isLoading, busy: isLoading }}
               >
-                <Text style={styles.buttonText}>
-                  {isLoading ? '⏳ Creating...' : '🚀 Create New Meeting'}
-                </Text>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Create New Meeting</Text>
+                )}
               </TouchableOpacity>
             </View>
 
             {/* Join Meeting Card */}
             <View style={styles.card}>
-              <Text style={styles.cardEmoji}>📱</Text>
+              <IconSymbol name="phone.fill" size={40} color="#4f46e5" />
               <Text style={styles.cardTitle}>Join Meeting</Text>
               <Text style={styles.cardDescription}>Enter a meeting code to join</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, joinError && styles.inputInvalid]}
                 placeholder="Enter meeting code..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#476b9c"
                 value={joinRoomId}
-                onChangeText={setJoinRoomId}
+                onChangeText={value => { setJoinRoomId(value); if (joinError) setJoinError(''); }}
                 editable={!isLoading}
+                accessibilityLabel="Meeting code"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="go"
+                onSubmitEditing={handleJoinMeeting}
               />
+              {joinError ? <Text accessibilityLiveRegion="polite" style={styles.inlineError}>{joinError}</Text> : null}
               <TouchableOpacity
                 style={[styles.button, styles.joinButton, (!joinRoomId.trim() || isLoading) && styles.buttonDisabled]}
                 onPress={handleJoinMeeting}
                 disabled={!joinRoomId.trim() || isLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Join meeting"
+                accessibilityState={{ disabled: !joinRoomId.trim() || isLoading, busy: isLoading }}
               >
-                <Text style={styles.buttonText}>
-                  {isLoading ? '⏳ Joining...' : '🎯 Join Meeting'}
-                </Text>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Join Meeting</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Features */}
           <View style={styles.featuresContainer}>
-            <Text style={styles.featuresTitle}>✨ Features</Text>
+            <Text style={styles.featuresTitle}>Features</Text>
             <View style={styles.featuresGrid}>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>🔒</Text>
+                <IconSymbol name="lock.fill" size={16} color="#4f46e5" />
                 <Text style={styles.featureText}>Secure & Private</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>⚡</Text>
+                <IconSymbol name="bolt.fill" size={16} color="#4f46e5" />
                 <Text style={styles.featureText}>Fast & Reliable</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>💬</Text>
+                <IconSymbol name="bubble.left.fill" size={16} color="#4f46e5" />
                 <Text style={styles.featureText}>Chat & Screen Share</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>🎙️</Text>
+                <IconSymbol name="mic.fill" size={16} color="#4f46e5" />
                 <Text style={styles.featureText}>HD Audio/Video</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>📹</Text>
+                <IconSymbol name="record.circle" size={16} color="#4f46e5" />
                 <Text style={styles.featureText}>Recording Available</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>🌐</Text>
+                <IconSymbol name="globe" size={16} color="#4f46e5" />
                 <Text style={styles.featureText}>Works Everywhere</Text>
               </View>
             </View>
@@ -283,8 +307,10 @@ export default function LiveClassroomPage() {
           <TouchableOpacity
             style={styles.toggleButton}
             onPress={() => setShowNativeView(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Switch to web view"
           >
-            <Text style={styles.toggleButtonText}>🌐 Switch to Web View</Text>
+            <Text style={styles.toggleButtonText}>Switch to Web View</Text>
           </TouchableOpacity>
         </ScrollView>
       </ThemedView>
@@ -299,12 +325,15 @@ export default function LiveClassroomPage() {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setShowNativeView(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Back to native view"
         >
-          <Text style={styles.backButtonText}>📱 Native View</Text>
+          <Text style={styles.backButtonText}>Native View</Text>
         </TouchableOpacity>
       </View>
       <WebView
         source={{ uri: `${API_BASE_URL}/demo` }}
+        accessibilityLabel="i-Meet demo web view"
         style={styles.webview}
         mediaPlaybackRequiresUserAction={false}
         allowsInlineMediaPlayback={true}
@@ -333,7 +362,7 @@ export default function LiveClassroomPage() {
         renderLoading={() => (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4f46e5" />
-            <Text style={{ marginTop: 12, color: '#666' }}>Loading demo...</Text>
+            <Text style={{ marginTop: 12, color: "#476b9c" }}>Loading demo...</Text>
           </View>
         )}
       />
@@ -357,13 +386,13 @@ const styles = StyleSheet.create({
   accessDeniedTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ff5252',
+    color: '#ef4444',
     marginTop: 16,
     marginBottom: 8,
   },
   accessDeniedText: {
     fontSize: 16,
-    color: '#666',
+    color: "#476b9c",
     textAlign: 'center',
   },
   header: {
@@ -380,7 +409,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: "#476b9c",
     marginTop: 4,
   },
   cardsContainer: {
@@ -409,26 +438,37 @@ const styles = StyleSheet.create({
   },
   cardDescription: {
     fontSize: 14,
-    color: '#666',
+    color: "#476b9c",
     marginBottom: 16,
   },
   input: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f0f5ff",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#d9e3f3",
     borderRadius: 8,
     padding: 12,
     fontSize: 15,
     color: "#0f2444",
     marginBottom: 12,
   },
+  inputInvalid: {
+    borderColor: '#b3261e',
+  },
+  inlineError: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#b3261e',
+    marginBottom: 12,
+  },
   button: {
     paddingVertical: 14,
+    minHeight: 52,
+    justifyContent: 'center',
     borderRadius: 8,
     alignItems: 'center',
   },
   createButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: "#4f46e5",
   },
   joinButton: {
     backgroundColor: "#4f46e5",
@@ -520,13 +560,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   meetingSubtitle: {
-    color: '#999',
+    color: '#cbd5e1',
     fontSize: 12,
   },
   leaveButton: {
-    backgroundColor: '#ff5252',
+    backgroundColor: '#ef4444',
     paddingHorizontal: 16,
     paddingVertical: 8,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 6,
   },
   leaveButtonText: {

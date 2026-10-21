@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 
 export default function GeneratedContent({ content, template }) {

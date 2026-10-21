@@ -111,6 +111,8 @@ export const globalStyles = StyleSheet.create({
   // Inputs
   input: {
     borderWidth: 1,
+    borderColor: '#d9e3f3',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: Spacing.md,
     fontSize: FontSizes.md,
@@ -119,7 +121,7 @@ export const globalStyles = StyleSheet.create({
   // Dividers
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#d9e3f3',
     marginVertical: Spacing.md,
   },
 

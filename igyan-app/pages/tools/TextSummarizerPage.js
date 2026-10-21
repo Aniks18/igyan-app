@@ -5,7 +5,6 @@
 
 import React, { useState, useRef } from 'react';
 import { ScrollView, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -22,7 +21,6 @@ const SUMMARY_STYLES = [
 ];
 
 export default function TextSummarizerPage() {
-  const router = useRouter();
   const scrollViewRef = useRef(null);
   const { openSideNav } = useSideNav();
   const [text, setText] = useState('');
@@ -116,8 +114,6 @@ Summary:`;
       <Header 
         title="Text Summarizer" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
         rightComponent={
           summary ? (
             <TouchableOpacity

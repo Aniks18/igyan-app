@@ -5,7 +5,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ScrollView, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -42,7 +41,6 @@ const STARTER_PROMPTS = [
 ];
 
 export default function CodeTutorPage() {
-  const router = useRouter();
   const scrollViewRef = useRef(null);
   const { openSideNav } = useSideNav();
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
@@ -204,8 +202,6 @@ IMPORTANT:
       <Header 
         title="Code Tutor" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
         rightComponent={
           <TouchableOpacity
             onPress={() => setShowLanguagePicker(!showLanguagePicker)}

@@ -20,8 +20,6 @@ import { useAuth } from '../utils/AuthContext';
 export default function Header({ 
   title = 'iGyan', 
   onMenuPress, 
-  showBack = false, 
-  onBackPress,
   rightComponent,
   transparent = false,
 }) {
@@ -46,27 +44,15 @@ export default function Header({
       <View style={styles.content}>
         {/* Left Section */}
         <View style={styles.leftSection}>
-          {showBack ? (
-            <TouchableOpacity 
-              style={styles.iconButton} 
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-              onPress={onBackPress}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="chevron.left" size={24} color="#0f2444" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity 
-              style={styles.iconButton} 
-              accessibilityRole="button"
-              accessibilityLabel="Open navigation"
-              onPress={onMenuPress}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="line.3.horizontal" size={22} color="#0f2444" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={styles.iconButton}
+            accessibilityRole="button"
+            accessibilityLabel="Open navigation menu"
+            onPress={onMenuPress}
+            activeOpacity={0.7}
+          >
+            <IconSymbol name="line.3.horizontal" size={22} color="#0f2444" />
+          </TouchableOpacity>
         </View>
 
         {/* Center - School Icon + Title */}
@@ -87,10 +73,10 @@ export default function Header({
                 </View>
 
               {/* Profile/Menu Button */}
-              <TouchableOpacity 
-                style={styles.profileButton} 
+              <TouchableOpacity
+                style={styles.profileButton}
                 accessibilityRole="button"
-              accessibilityLabel="Open navigation"
+              accessibilityLabel="Open account menu"
               onPress={onMenuPress}
                 activeOpacity={0.7}
               >

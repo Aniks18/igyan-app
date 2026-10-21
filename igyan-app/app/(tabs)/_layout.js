@@ -3,48 +3,53 @@
  * Bottom tab navigation configuration
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 
 import { HapticTab } from '../../components/HapticTab';
 import { IconSymbol } from '../../components/IconSymbol';
 import Header from '../../components/Header';
-import { Colors } from '../../constants/theme';
-import { useColorScheme } from '../../hooks/useColorScheme';
 import { useAuth } from '../../utils/AuthContext';
 import { useSideNav } from '../../utils/SideNavContext';
 import { supabase } from '../../utils/supabase';
 
-const INSTITUTIONAL_ROLES = ['super_admin', 'co_admin', 'student', 'faculty'];
+const INSTITUTIONAL_ROLES = ['super_admin', 'co_admin', 'student', 'faculty', 'parent'];
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { openSideNav } = useSideNav();
   const [schoolName, setSchoolName] = useState('iGyan');
 
+  // Route guard: the tab group is authenticated-only. Send signed-out
+  // users back to welcome instead of rendering an empty shell.
   useEffect(() => {
-    if (user && user.school_id && INSTITUTIONAL_ROLES.includes(user.role)) {
-      fetchSchoolName();
+    if (!loading && !user) {
+      router.replace('/welcome');
     }
-  }, [user]);
+  }, [user, loading]);
 
-  const fetchSchoolName = async () => {
+  const fetchSchoolName = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('schools')
         .select('school_name')
         .eq('id', user.school_id)
         .single();
-      
+
       if (!error && data) {
         setSchoolName(data.school_name);
       }
     } catch (error) {
       console.error('Error fetching school name:', error);
     }
-  };
+  }, [user?.school_id]);
+
+  useEffect(() => {
+    if (user && user.school_id && INSTITUTIONAL_ROLES.includes(user.role)) {
+      fetchSchoolName();
+    }
+  }, [user, fetchSchoolName]);
 
   return (
     <View style={styles.container}>

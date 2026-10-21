@@ -5,7 +5,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ScrollView, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -43,7 +42,6 @@ const DETAIL_LEVEL_OPTIONS = [
 ];
 
 export default function StepByStepGuidePage() {
-  const router = useRouter();
   const scrollViewRef = useRef(null);
   const { openSideNav } = useSideNav();
   const [formData, setFormData] = useState({
@@ -188,8 +186,6 @@ Provide ONLY valid JSON, no additional commentary.`;
       <Header 
         title="Step-by-Step Guide" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
         rightComponent={
           guide ? (
             <TouchableOpacity

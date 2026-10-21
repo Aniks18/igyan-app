@@ -10,7 +10,6 @@ import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
   ActivityIndicator, RefreshControl, Alert, TextInput, Modal, FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
 import Header from '../../components/Header';
 import { IconSymbol } from '../../components/IconSymbol';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -68,21 +67,34 @@ export default function SchoolManagementPage() {
   // Modals
   const [modalType, setModalType] = useState(null);
   const [form, setForm] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [modalBusy, setModalBusy] = useState(false);
+  const [loadError, setLoadError] = useState('');
+
+  const closeModal = () => { setModalType(null); setFieldErrors({}); };
+  const updateForm = (patch) => {
+    setForm(p => ({ ...p, ...(typeof patch === 'function' ? patch(p) : patch) }));
+    setFieldErrors({});
+  };
 
   // ─── Boot ─────────────────────────────────
-  useEffect(() => { boot(); }, []);
-
-  const boot = async () => {
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
       setSession(sess);
       if (!sess) return;
       await loadAll(sess);
-    } catch (e) { console.error('Manage School boot:', e); }
+    } catch (e) {
+      console.error('Manage School boot:', e);
+      setLoadError('Could not load school data. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [user?.school_id]);
+
+  useEffect(() => { boot(); }, [boot]);
 
   const loadAll = async (sess) => {
     const s = sess || session;
@@ -128,12 +140,18 @@ export default function SchoolManagementPage() {
 
   // ─── CRUD Handlers ────────────────────────
   const handleAddSubject = async () => {
-    if (!form.subjectName?.trim()) return Alert.alert('Error', 'Subject name is required');
+    if (modalBusy) return;
+    if (!form.subjectName?.trim()) {
+      setFieldErrors({ subjectName: 'Enter the subject name.' });
+      return;
+    }
+    setModalBusy(true);
     try {
       await addSubject({ schoolId: user.school_id, subjectName: form.subjectName.trim(), subjectCode: form.subjectCode?.trim(), description: form.description?.trim() });
-      setModalType(null); setForm({});
+      setModalType(null); setForm({}); setFieldErrors({});
       setSubjects(await getSubjects(user.school_id));
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setModalBusy(false); }
   };
 
   const handleDeleteSubject = (id, name) => {
@@ -147,13 +165,22 @@ export default function SchoolManagementPage() {
   };
 
   const handleAddClass = async () => {
-    if (!form.className?.trim()) return Alert.alert('Error', 'Class name is required');
-    if (!session) return Alert.alert('Error', 'No active session');
+    if (modalBusy) return;
+    if (!form.className?.trim()) {
+      setFieldErrors({ className: 'Enter the class name.' });
+      return;
+    }
+    if (!session) {
+      setFieldErrors({ className: 'No active academic session found.' });
+      return;
+    }
+    setModalBusy(true);
     try {
       await addClass({ schoolId: user.school_id, sessionId: session.id, className: form.className.trim(), section: form.section?.trim() || 'A', roomNumber: form.roomNumber?.trim(), capacity: form.capacity?.trim() });
-      setModalType(null); setForm({});
+      setModalType(null); setForm({}); setFieldErrors({});
       setClasses(await getClasses(user.school_id, session.id));
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setModalBusy(false); }
   };
 
   const handleDeleteClass = (id, name) => {
@@ -205,17 +232,23 @@ export default function SchoolManagementPage() {
   };
 
   const handleAssignFaculty = async () => {
-    if (!form.facultyId || !form.assignClassId) return Alert.alert('Error', 'Select faculty and class');
+    if (modalBusy) return;
+    if (!form.facultyId || !form.assignClassId) {
+      setFieldErrors({ assign: 'Select a faculty member and a class to continue.' });
+      return;
+    }
     if (!session) return;
+    setModalBusy(true);
     try {
       await assignFaculty({
         schoolId: user.school_id, facultyId: form.facultyId, classId: form.assignClassId,
         subjectId: form.assignSubjectId || null, sessionId: session.id,
         assignmentType: form.assignSubjectId ? 'subject_teacher' : 'class_teacher',
       });
-      setModalType(null); setForm({});
+      setModalType(null); setForm({}); setFieldErrors({});
       setFacultyAssignments(await getFacultyAssignments(user.school_id, session.id));
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setModalBusy(false); }
   };
 
   const handleRemoveAssignment = (id) => {
@@ -232,7 +265,7 @@ export default function SchoolManagementPage() {
   if (!isAdmin) {
     return (
       <View style={s.root}>
-        <Header title="Manage School" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage School" onMenuPress={openSideNav} />
         <View style={s.center}><Text style={s.mutedText}>Admin access required</Text></View>
       </View>
     );
@@ -241,8 +274,26 @@ export default function SchoolManagementPage() {
   if (loading) {
     return (
       <View style={s.root}>
-        <Header title="Manage School" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage School" onMenuPress={openSideNav} />
         <View style={s.center}><ActivityIndicator size="large" color={C.accent} /><Text style={s.mutedText}>Loading…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={s.root}>
+        <Header title="Manage School" onMenuPress={openSideNav} />
+        <View style={s.scrollInner}>
+          <View style={s.center}>
+            <IconSymbol name="cloud.fill" size={48} color={C.dim} />
+            <Text style={s.emptyTitle}>Could not load school data</Text>
+            <Text style={s.mutedText}>{loadError}</Text>
+            <TouchableOpacity style={s.submitBtn} onPress={boot} accessibilityRole="button" accessibilityLabel="Try loading again">
+              <Text style={s.submitBtnText}>Try again</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   }
@@ -250,7 +301,7 @@ export default function SchoolManagementPage() {
   if (!session) {
     return (
       <View style={s.root}>
-        <Header title="Manage School" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage School" onMenuPress={openSideNav} />
         <View style={s.center}><IconSymbol name="calendar" size={40} color={C.dim} /><Text style={s.emptyTitle}>No Active Session</Text><Text style={s.mutedText}>Create an academic session first.</Text></View>
       </View>
     );
@@ -268,7 +319,7 @@ export default function SchoolManagementPage() {
   // ═══════════════════════════════════════════
   return (
     <View style={s.root}>
-      <Header title="Manage School" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Manage School" onMenuPress={openSideNav} />
 
       {/* Session banner */}
       <View style={s.sessionBanner}>
@@ -279,7 +330,14 @@ export default function SchoolManagementPage() {
       {/* Tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.tabBar}>
         {TABS.map(t => (
-          <TouchableOpacity key={t.key} style={[s.tab, tab === t.key && s.tabActive]} onPress={() => setTab(t.key)}>
+          <TouchableOpacity
+            key={t.key}
+            style={[s.tab, tab === t.key && s.tabActive]}
+            onPress={() => setTab(t.key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === t.key }}
+            accessibilityLabel={`${t.label} tab`}
+          >
             <IconSymbol name={t.icon} size={14} color={tab === t.key ? '#fff' : C.muted} />
             <Text style={[s.tabText, tab === t.key && s.tabTextActive]}>{t.label}</Text>
           </TouchableOpacity>
@@ -381,18 +439,18 @@ export default function SchoolManagementPage() {
       {/* ═════════════ MODALS ═════════════ */}
 
       {/* Add Subject */}
-      <FormModal visible={modalType === 'addSubject'} title="Add Subject" onClose={() => setModalType(null)} onSubmit={handleAddSubject}>
-        <Input placeholder="Subject Name *" value={form.subjectName} onChangeText={v => setForm(p => ({ ...p, subjectName: v }))} />
-        <Input placeholder="Subject Code (optional)" value={form.subjectCode} onChangeText={v => setForm(p => ({ ...p, subjectCode: v }))} />
-        <Input placeholder="Description (optional)" value={form.description} onChangeText={v => setForm(p => ({ ...p, description: v }))} multiline />
+      <FormModal visible={modalType === 'addSubject'} title="Add Subject" onClose={closeModal} onSubmit={handleAddSubject} busy={modalBusy}>
+        <Input placeholder="Subject Name *" value={form.subjectName} onChangeText={v => updateForm({ subjectName: v })} error={fieldErrors.subjectName} editable={!modalBusy} />
+        <Input placeholder="Subject Code (optional)" value={form.subjectCode} onChangeText={v => updateForm({ subjectCode: v })} autoCapitalize="none" editable={!modalBusy} />
+        <Input placeholder="Description (optional)" value={form.description} onChangeText={v => updateForm({ description: v })} multiline editable={!modalBusy} />
       </FormModal>
 
       {/* Add Class */}
-      <FormModal visible={modalType === 'addClass'} title="Add Class" onClose={() => setModalType(null)} onSubmit={handleAddClass}>
-        <Input placeholder="Class Name * (e.g. 10, XII)" value={form.className} onChangeText={v => setForm(p => ({ ...p, className: v }))} />
-        <Input placeholder="Section (default A)" value={form.section} onChangeText={v => setForm(p => ({ ...p, section: v }))} />
-        <Input placeholder="Room Number (optional)" value={form.roomNumber} onChangeText={v => setForm(p => ({ ...p, roomNumber: v }))} />
-        <Input placeholder="Capacity (optional)" value={form.capacity} onChangeText={v => setForm(p => ({ ...p, capacity: v }))} keyboardType="numeric" />
+      <FormModal visible={modalType === 'addClass'} title="Add Class" onClose={closeModal} onSubmit={handleAddClass} busy={modalBusy}>
+        <Input placeholder="Class Name * (e.g. 10, XII)" value={form.className} onChangeText={v => updateForm({ className: v })} error={fieldErrors.className} editable={!modalBusy} />
+        <Input placeholder="Section (default A)" value={form.section} onChangeText={v => updateForm({ section: v })} autoCapitalize="none" editable={!modalBusy} />
+        <Input placeholder="Room Number (optional)" value={form.roomNumber} onChangeText={v => updateForm({ roomNumber: v })} autoCapitalize="none" editable={!modalBusy} />
+        <Input placeholder="Capacity (optional)" value={form.capacity} onChangeText={v => updateForm({ capacity: v })} keyboardType="numeric" editable={!modalBusy} />
       </FormModal>
 
       {/* Enroll Student — picker */}
@@ -424,9 +482,11 @@ export default function SchoolManagementPage() {
         classes={classes}
         subjects={subjects}
         form={form}
-        setForm={setForm}
+        setForm={updateForm}
+        assignError={fieldErrors.assign}
+        busy={modalBusy}
         onSubmit={handleAssignFaculty}
-        onClose={() => setModalType(null)}
+        onClose={closeModal}
       />
     </View>
   );
@@ -441,7 +501,7 @@ function SectionHeader({ title, onAdd }) {
     <View style={s.sectionHeader}>
       <Text style={s.sectionTitle}>{title}</Text>
       {onAdd && (
-        <TouchableOpacity style={s.addBtn} onPress={onAdd}><IconSymbol name="plus" size={14} color="#fff" /><Text style={s.addBtnText}>Add</Text></TouchableOpacity>
+        <TouchableOpacity style={s.addBtn} onPress={onAdd} accessibilityRole="button" accessibilityLabel={`Add ${title}`} hitSlop={8}><IconSymbol name="plus" size={14} color="#fff" /><Text style={s.addBtnText}>Add</Text></TouchableOpacity>
       )}
     </View>
   );
@@ -454,10 +514,17 @@ function EmptyState({ text }) {
 function ClassChips({ classes, selected, onSelect }) {
   return (
     <View style={s.chipRow}>
-      <Text style={s.chipLabel}>SELECT CLASS</Text>
+      <Text style={s.chipLabel}>Select class</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {classes.map(cls => (
-          <TouchableOpacity key={cls.id} style={[s.chip, selected === cls.id && s.chipActive]} onPress={() => onSelect(cls.id)}>
+          <TouchableOpacity
+            key={cls.id}
+            style={[s.chip, selected === cls.id && s.chipActive]}
+            onPress={() => onSelect(cls.id)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: selected === cls.id }}
+            accessibilityLabel={`Class ${cls.class_name} ${cls.section || ''}`}
+          >
             <Text style={[s.chipText, selected === cls.id && s.chipTextActive]}>{cls.class_name} {cls.section || ''}</Text>
           </TouchableOpacity>
         ))}
@@ -478,40 +545,53 @@ function ListCard({ title, subtitle, extra, badge, onDelete }) {
         {extra ? <Text style={s.listCardExtra}>{extra}</Text> : null}
       </View>
       {onDelete && (
-        <TouchableOpacity onPress={onDelete} style={s.deleteBtn}><IconSymbol name="trash" size={15} color={C.red} /></TouchableOpacity>
+        <TouchableOpacity onPress={onDelete} style={s.deleteBtn} accessibilityRole="button" accessibilityLabel={title ? `Delete ${title}` : 'Delete item'} hitSlop={8}><IconSymbol name="trash" size={15} color={C.red} /></TouchableOpacity>
       )}
     </View>
   );
 }
 
-function Input({ placeholder, value, onChangeText, multiline, keyboardType }) {
+function Input({ placeholder, value, onChangeText, multiline, keyboardType, error, editable = true, autoCapitalize }) {
   return (
-    <TextInput
-      style={[s.input, multiline && { height: 70, textAlignVertical: 'top' }]}
-      placeholder={placeholder}
-      placeholderTextColor={C.dim}
-      value={value || ''}
-      onChangeText={onChangeText}
-      multiline={multiline}
-      keyboardType={keyboardType}
-    />
+    <View>
+      <TextInput
+        style={[s.input, multiline && { height: 70, textAlignVertical: 'top' }, error && s.inputInvalid]}
+        placeholder={placeholder}
+        placeholderTextColor={C.dim}
+        value={value || ''}
+        onChangeText={onChangeText}
+        multiline={multiline}
+        keyboardType={keyboardType}
+        editable={editable}
+        autoCapitalize={autoCapitalize}
+        accessibilityLabel={placeholder}
+      />
+      {error ? <Text accessibilityLiveRegion="polite" style={s.inlineError}>{error}</Text> : null}
+    </View>
   );
 }
 
-function FormModal({ visible, title, onClose, onSubmit, children }) {
+function FormModal({ visible, title, onClose, onSubmit, children, busy = false }) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={s.modalOverlay}>
         <View style={s.modalBox}>
           <View style={s.modalHeader}>
             <Text style={s.modalTitle}>{title}</Text>
-            <TouchableOpacity onPress={onClose}><IconSymbol name="xmark" size={18} color={C.muted} /></TouchableOpacity>
+            <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close dialog" hitSlop={8}><IconSymbol name="xmark" size={18} color={C.muted} /></TouchableOpacity>
           </View>
           <ScrollView style={{ maxHeight: 320 }} contentContainerStyle={{ gap: 10, paddingHorizontal: 16, paddingBottom: 16 }}>
             {children}
           </ScrollView>
-          <TouchableOpacity style={s.submitBtn} onPress={onSubmit}>
-            <Text style={s.submitBtnText}>Save</Text>
+          <TouchableOpacity
+            style={[s.submitBtn, busy && s.submitBtnDisabled]}
+            onPress={onSubmit}
+            disabled={busy}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+            accessibilityState={{ disabled: busy, busy }}
+          >
+            {busy ? <ActivityIndicator size="small" color="#fff" /> : <Text style={s.submitBtnText}>Save</Text>}
           </TouchableOpacity>
         </View>
       </View>
@@ -532,14 +612,14 @@ function PickerModal({ visible, title, data, renderLabel, renderSub, onSelect, o
         <View style={s.modalBox}>
           <View style={s.modalHeader}>
             <Text style={s.modalTitle}>{title}</Text>
-            <TouchableOpacity onPress={onClose}><IconSymbol name="xmark" size={18} color={C.muted} /></TouchableOpacity>
+            <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close dialog" hitSlop={8}><IconSymbol name="xmark" size={18} color={C.muted} /></TouchableOpacity>
           </View>
-          <TextInput style={[s.input, { marginHorizontal: 16, marginBottom: 8 }]} placeholder="Search…" placeholderTextColor={C.dim} value={search} onChangeText={setSearch} />
+          <TextInput style={[s.input, { marginHorizontal: 16, marginBottom: 8 }]} placeholder="Search…" placeholderTextColor={C.dim} value={search} onChangeText={setSearch} accessibilityLabel={`Search ${title}`} />
           <FlatList
             data={filtered}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={s.pickerRow} onPress={() => { onSelect(item); setSearch(''); }}>
+              <TouchableOpacity style={s.pickerRow} onPress={() => { onSelect(item); setSearch(''); }} accessibilityRole="button" accessibilityLabel={`Select ${renderLabel(item)}`}>
                 <View style={s.pickerAvatar}><Text style={s.pickerAvatarText}>{renderLabel(item)?.[0] || '?'}</Text></View>
                 <View style={{ flex: 1 }}>
                   <Text style={s.pickerName}>{renderLabel(item)}</Text>
@@ -557,8 +637,10 @@ function PickerModal({ visible, title, data, renderLabel, renderSub, onSelect, o
   );
 }
 
-function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm, onSubmit, onClose }) {
+function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm, assignError, busy = false, onSubmit, onClose }) {
   const [step, setStep] = useState(1); // 1=faculty, 2=class, 3=subject(optional), 4=confirm
+
+  useEffect(() => { if (visible) setStep(1); }, [visible]);
 
   const selectedFac = faculty.find(f => f.id === form.facultyId);
   const selectedCls = classes.find(c => c.id === form.assignClassId);
@@ -574,7 +656,7 @@ function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm
             <Text style={s.modalTitle}>
               {step === 1 ? 'Select Faculty' : step === 2 ? 'Select Class' : step === 3 ? 'Select Subject (Optional)' : 'Confirm Assignment'}
             </Text>
-            <TouchableOpacity onPress={handleClose}><IconSymbol name="xmark" size={18} color={C.muted} /></TouchableOpacity>
+            <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close assignment dialog" hitSlop={8}><IconSymbol name="xmark" size={18} color={C.muted} /></TouchableOpacity>
           </View>
 
           {step === 1 && (
@@ -582,7 +664,7 @@ function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm
               data={faculty}
               keyExtractor={item => item.id}
               renderItem={({ item }) => (
-                <TouchableOpacity style={s.pickerRow} onPress={() => { setForm(p => ({ ...p, facultyId: item.id })); setStep(2); }}>
+                <TouchableOpacity style={s.pickerRow} onPress={() => { setForm(p => ({ ...p, facultyId: item.id })); setStep(2); }} accessibilityRole="button" accessibilityLabel={`Select faculty ${item.full_name}`}>
                   <View style={s.pickerAvatar}><Text style={s.pickerAvatarText}>{item.full_name?.[0]}</Text></View>
                   <View style={{ flex: 1 }}><Text style={s.pickerName}>{item.full_name}</Text><Text style={s.pickerSub}>{item.email}</Text></View>
                 </TouchableOpacity>
@@ -597,7 +679,7 @@ function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm
               data={classes}
               keyExtractor={item => item.id}
               renderItem={({ item }) => (
-                <TouchableOpacity style={s.pickerRow} onPress={() => { setForm(p => ({ ...p, assignClassId: item.id })); setStep(3); }}>
+                <TouchableOpacity style={s.pickerRow} onPress={() => { setForm(p => ({ ...p, assignClassId: item.id })); setStep(3); }} accessibilityRole="button" accessibilityLabel={`Select class ${item.class_name} ${item.section || ''}`}>
                   <View style={[s.pickerAvatar, { backgroundColor: C.green }]}><Text style={s.pickerAvatarText}>{item.class_name?.[0]}</Text></View>
                   <View style={{ flex: 1 }}><Text style={s.pickerName}>{item.class_name} {item.section || ''}</Text></View>
                 </TouchableOpacity>
@@ -609,7 +691,7 @@ function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm
 
           {step === 3 && (
             <>
-              <TouchableOpacity style={[s.pickerRow, { backgroundColor: C.accentDim }]} onPress={() => { setForm(p => ({ ...p, assignSubjectId: null })); setStep(4); }}>
+              <TouchableOpacity style={[s.pickerRow, { backgroundColor: C.accentDim }]} onPress={() => { setForm(p => ({ ...p, assignSubjectId: null })); setStep(4); }} accessibilityRole="button" accessibilityLabel="Assign as class teacher, no specific subject">
                 <View style={[s.pickerAvatar, { backgroundColor: C.amber }]}><Text style={s.pickerAvatarText}>CT</Text></View>
                 <View style={{ flex: 1 }}><Text style={s.pickerName}>Class Teacher (no subject)</Text></View>
               </TouchableOpacity>
@@ -617,7 +699,7 @@ function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm
                 data={subjects}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={s.pickerRow} onPress={() => { setForm(p => ({ ...p, assignSubjectId: item.id })); setStep(4); }}>
+                  <TouchableOpacity style={s.pickerRow} onPress={() => { setForm(p => ({ ...p, assignSubjectId: item.id })); setStep(4); }} accessibilityRole="button" accessibilityLabel={`Assign subject ${item.subject_name}`}>
                     <View style={s.pickerAvatar}><Text style={s.pickerAvatarText}>{item.subject_name?.[0]}</Text></View>
                     <View style={{ flex: 1 }}><Text style={s.pickerName}>{item.subject_name}</Text></View>
                   </TouchableOpacity>
@@ -633,8 +715,16 @@ function FacultyAssignModal({ visible, faculty, classes, subjects, form, setForm
               <ConfirmRow label="Faculty" value={selectedFac?.full_name} />
               <ConfirmRow label="Class" value={selectedCls ? `${selectedCls.class_name} ${selectedCls.section || ''}` : ''} />
               <ConfirmRow label="Subject" value={selectedSub?.subject_name || 'Class Teacher'} />
-              <TouchableOpacity style={s.submitBtn} onPress={() => { onSubmit(); setStep(1); }}>
-                <Text style={s.submitBtnText}>Assign Faculty</Text>
+              {assignError ? <Text accessibilityLiveRegion="polite" style={s.inlineError}>{assignError}</Text> : null}
+              <TouchableOpacity
+                style={[s.submitBtn, busy && s.submitBtnDisabled]}
+                onPress={onSubmit}
+                disabled={busy}
+                accessibilityRole="button"
+                accessibilityLabel="Assign faculty"
+                accessibilityState={{ disabled: busy, busy }}
+              >
+                {busy ? <ActivityIndicator size="small" color="#fff" /> : <Text style={s.submitBtnText}>Assign Faculty</Text>}
               </TouchableOpacity>
             </View>
           )}
@@ -669,7 +759,7 @@ const s = StyleSheet.create({
 
   // Tabs
   tabBar: { gap: 6, paddingHorizontal: 12, paddingVertical: 10 },
-  tab: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: C.surface },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, minHeight: 44, borderRadius: 10, backgroundColor: C.surface },
   tabActive: { backgroundColor: C.accent },
   tabText: { fontSize: 12, fontWeight: '500', color: C.muted },
   tabTextActive: { color: '#fff' },
@@ -677,15 +767,15 @@ const s = StyleSheet.create({
   // Section header
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   sectionTitle: { fontSize: 14, fontWeight: '600', color: C.text },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.accent, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.accent, paddingHorizontal: 12, paddingVertical: 6, minHeight: 44, borderRadius: 8 },
   addBtnText: { fontSize: 12, fontWeight: '600', color: '#fff' },
 
   subHeading: { fontSize: 13, fontWeight: '600', color: C.muted, marginTop: 16, marginBottom: 8 },
 
   // Chips
   chipRow: { marginBottom: 12, gap: 6 },
-  chipLabel: { fontSize: 10, fontWeight: '600', color: C.dim, letterSpacing: 1 },
-  chip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 14, backgroundColor: C.surface, marginRight: 6 },
+  chipLabel: { fontSize: 12, fontWeight: '600', color: C.dim },
+  chip: { paddingHorizontal: 14, paddingVertical: 6, minHeight: 44, justifyContent: 'center', borderRadius: 14, backgroundColor: C.surface, marginRight: 6 },
   chipActive: { backgroundColor: C.accent },
   chipText: { fontSize: 12, fontWeight: '500', color: C.muted },
   chipTextActive: { color: '#fff' },
@@ -710,8 +800,11 @@ const s = StyleSheet.create({
   modalTitle: { fontSize: 15, fontWeight: '600', color: C.text },
 
   input: { backgroundColor: C.surfaceAlt, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: C.text, borderWidth: 1, borderColor: C.border },
+  inputInvalid: { borderColor: '#ef4444' },
+  inlineError: { fontSize: 12, fontWeight: '500', color: '#ef4444', marginTop: 6, marginHorizontal: 16 },
 
-  submitBtn: { backgroundColor: C.accent, marginHorizontal: 16, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  submitBtn: { backgroundColor: C.accent, marginHorizontal: 16, paddingVertical: 12, minHeight: 48, justifyContent: 'center', borderRadius: 10, alignItems: 'center' },
+  submitBtnDisabled: { opacity: 0.45 },
   submitBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 
   // Picker rows

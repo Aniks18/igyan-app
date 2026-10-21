@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { IconSymbol } from '../IconSymbol';
 import { useThemeColor } from '../../hooks/useThemeColor';
 
@@ -33,9 +33,9 @@ const formats = [
 ];
 
 export default function FormatSelector({ selected, onSelect }) {
-  const cardColor = useThemeColor({}, 'card');
   const borderColor = useThemeColor({}, 'border');
   const textColor = useThemeColor({}, 'text');
+  const mutedColor = useThemeColor({}, 'icon');
 
   return (
     <View style={styles.container}>
@@ -51,13 +51,12 @@ export default function FormatSelector({ selected, onSelect }) {
           ]}
           onPress={() => onSelect(format.id)}
           activeOpacity={0.7}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: selected === format.id }}
+          accessibilityLabel={`${format.name}. ${format.description}`}
         >
           <View style={[styles.iconContainer, { backgroundColor: `${format.color}20` }]}>
-            {format.id === 'shark-ppt' ? (
-              <Text style={styles.sharkEmoji}>🦈</Text>
-            ) : (
-              <IconSymbol name={format.icon} size={24} color={format.color} />
-            )}
+            <IconSymbol name={format.icon} size={24} color={format.color} />
           </View>
 
           <View style={styles.formatInfo}>
@@ -69,14 +68,14 @@ export default function FormatSelector({ selected, onSelect }) {
                 </View>
               )}
             </View>
-            <Text style={styles.formatDesc}>{format.description}</Text>
+            <Text style={[styles.formatDesc, { color: mutedColor }]}>{format.description}</Text>
           </View>
 
           <View
             style={[
               styles.radioOuter,
               {
-                borderColor: selected === format.id ? format.color : '#ccc',
+                borderColor: selected === format.id ? format.color : borderColor,
               },
             ]}
           >
@@ -109,9 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  sharkEmoji: {
-    fontSize: 24,
-  },
   formatInfo: {
     flex: 1,
   },
@@ -137,7 +133,6 @@ const styles = StyleSheet.create({
   },
   formatDesc: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   radioOuter: {

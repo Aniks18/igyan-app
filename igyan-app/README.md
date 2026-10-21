@@ -79,9 +79,11 @@ igyan-app/
 
    ```bash
    npm run android    # Android
-   npm run ios        # iOS
+   npm run ios        # Build, install, and launch the iOS app
    npm run web        # Web
    ```
+
+   Use `npm run ios:open` to launch an already-installed app without rebuilding.
 
 ## 📱 Features
 

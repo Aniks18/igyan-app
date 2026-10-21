@@ -2,9 +2,9 @@
  * iGyan App - Course Viewer with PDF and Video Player
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { Video, ResizeMode } from 'expo-av';
 import { ThemedView } from '../../../components/ThemedView';
@@ -17,7 +17,6 @@ const { width } = Dimensions.get('window');
 
 export default function CourseViewerScreen() {
   const { id, lang = 'english' } = useLocalSearchParams();
-  const router = useRouter();
   const [course, setCourse] = useState(null);
   const [currentModule, setCurrentModule] = useState(1);
   const [selectedLanguage, setSelectedLanguage] = useState(lang);
@@ -28,14 +27,20 @@ export default function CourseViewerScreen() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
 
-  React.useEffect(() => {
-    loadCourse();
-  }, [id]);
-
-  const loadCourse = async () => {
+  const loadCourse = useCallback(async () => {
     const courseData = await fetchCourseById(id);
     setCourse(courseData);
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadCourse();
+  }, [loadCourse]);
+
+  // The lang query param is read once into state above; re-sync when the
+  // param itself changes so deep links update the language toggle.
+  useEffect(() => {
+    setSelectedLanguage(lang);
+  }, [lang]);
 
   if (!course) {
     return (
@@ -58,16 +63,18 @@ export default function CourseViewerScreen() {
 
   const getCurrentModuleUrl = () => getModuleUrl(currentModule);
 
+  const moduleUrl = getCurrentModuleUrl();
+  // expo-av cannot play Drive preview pages (HTML). Drive-hosted video
+  // falls back to the WebView player, which can.
+  const useWebPlayer = currentModule !== 3 || (moduleUrl?.includes('drive.google.com') ?? false);
+
   return (
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: cardColor }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <IconSymbol name="chevron.left" size={24} color={textColor} />
-          </TouchableOpacity>
           
-          <View style={{ flex: 1, marginLeft: 12 }}>
+          <View style={{ flex: 1 }}>
             <ThemedText style={styles.courseTitle} numberOfLines={1}>
               {course.title}
             </ThemedText>
@@ -175,9 +182,13 @@ export default function CourseViewerScreen() {
 
       {/* Content Area */}
       <View style={styles.contentArea}>
-        {currentModule !== 3 ? (
+        {!moduleUrl ? (
+          <View style={styles.loadingContainer}>
+            <ThemedText>Content is not available for this module yet.</ThemedText>
+          </View>
+        ) : useWebPlayer ? (
           <WebView
-            source={{ uri: getCurrentModuleUrl() }}
+            source={{ uri: moduleUrl }}
             style={styles.webview}
             startInLoadingState={true}
             renderLoading={() => (
@@ -190,7 +201,7 @@ export default function CourseViewerScreen() {
           <View style={styles.videoContainer}>
             <Video
               ref={videoRef}
-              source={{ uri: getCurrentModuleUrl() }}
+              source={{ uri: moduleUrl }}
               style={styles.video}
               useNativeControls
               resizeMode={ResizeMode.CONTAIN}
@@ -255,9 +266,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-  },
-  backButton: {
-    padding: 8,
   },
   courseTitle: {
     fontSize: 18,

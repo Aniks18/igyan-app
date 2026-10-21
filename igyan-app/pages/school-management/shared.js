@@ -4,7 +4,7 @@
  */
 import React, { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, FlatList, ScrollView,
+  View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, FlatList, ScrollView, ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -87,7 +87,7 @@ export function SectionHeader({ title, count, onAdd, addLabel = 'Add', addIcon =
         )}
       </View>
       {onAdd && (
-        <TouchableOpacity style={ms.addBtn} onPress={onAdd} activeOpacity={0.7}>
+        <TouchableOpacity style={ms.addBtn} onPress={onAdd} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={addLabel} hitSlop={8}>
           <MaterialIcons name={addIcon} size={16} color="#fff" />
           <Text style={ms.addBtnText}>{addLabel}</Text>
         </TouchableOpacity>
@@ -106,7 +106,7 @@ export function EmptyState({ icon = 'inbox', title = 'Nothing here yet', text, o
       <Text style={ms.emptyTitle}>{title}</Text>
       {text ? <Text style={ms.emptyText}>{text}</Text> : null}
       {onAction && (
-        <TouchableOpacity style={ms.emptyAction} onPress={onAction}>
+        <TouchableOpacity style={ms.emptyAction} onPress={onAction} accessibilityRole="button" accessibilityLabel={actionLabel || 'Add Now'}>
           <MaterialIcons name="add" size={16} color={C.accent} />
           <Text style={ms.emptyActionText}>{actionLabel || 'Add Now'}</Text>
         </TouchableOpacity>
@@ -119,7 +119,7 @@ export function EmptyState({ icon = 'inbox', title = 'Nothing here yet', text, o
 export function ClassChips({ classes, selected, onSelect }) {
   return (
     <View style={ms.chipRow}>
-      <Text style={ms.chipLabel}>SELECT CLASS</Text>
+      <Text style={ms.chipLabel}>Select class</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         {classes.map(cls => {
           const active = selected === cls.id;
@@ -139,7 +139,7 @@ export function UserCard({ name, email, phone, role, roleBadge, onDelete, onPres
   const initials = name ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : '?';
   const color = pickColor(name);
   return (
-    <TouchableOpacity style={ms.userCard} onPress={onPress} activeOpacity={onPress ? 0.65 : 1} disabled={!onPress}>
+    <TouchableOpacity style={ms.userCard} onPress={onPress} activeOpacity={onPress ? 0.65 : 1} disabled={!onPress} accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={name ? `User ${name}` : undefined}>
       <View style={[ms.userAvatar, { backgroundColor: color + '25' }]}>
         <Text style={[ms.userAvatarText, { color }]}>{initials}</Text>
       </View>
@@ -159,7 +159,7 @@ export function UserCard({ name, email, phone, role, roleBadge, onDelete, onPres
         </View>
       ) : null}
       {onDelete && (
-        <TouchableOpacity onPress={onDelete} style={ms.deleteBtn} activeOpacity={0.6}>
+        <TouchableOpacity onPress={onDelete} style={ms.deleteBtn} activeOpacity={0.6} accessibilityRole="button" accessibilityLabel={name ? `Delete user ${name}` : 'Delete user'} hitSlop={8}>
           <MaterialIcons name="delete-outline" size={18} color={C.red} />
         </TouchableOpacity>
       )}
@@ -199,7 +199,7 @@ export function ListCard({ icon, iconColor = C.accent, title, subtitle, extra, b
         {extra ? <Text style={ms.listCardExtra} numberOfLines={1}>{extra}</Text> : null}
       </View>
       {onDelete && (
-        <TouchableOpacity onPress={onDelete} style={ms.deleteBtn} activeOpacity={0.6}>
+        <TouchableOpacity onPress={onDelete} style={ms.deleteBtn} activeOpacity={0.6} accessibilityRole="button" accessibilityLabel={title ? `Delete ${title}` : 'Delete item'} hitSlop={8}>
           <MaterialIcons name="delete-outline" size={18} color={C.red} />
         </TouchableOpacity>
       )}
@@ -208,11 +208,11 @@ export function ListCard({ icon, iconColor = C.accent, title, subtitle, extra, b
 }
 
 /* ────── Labeled Input ────── */
-export function Input({ label, placeholder, value, onChangeText, multiline, keyboardType, secureTextEntry, icon }) {
+export function Input({ label, placeholder, value, onChangeText, multiline, keyboardType, secureTextEntry, icon, error, accessibilityLabel, editable = true, autoCapitalize, textContentType }) {
   return (
     <View style={ms.inputWrap}>
       {label ? <Text style={ms.inputLabel}>{label}</Text> : null}
-      <View style={[ms.inputRow, multiline && { height: 80, alignItems: 'flex-start' }]}>
+      <View style={[ms.inputRow, multiline && { height: 80, alignItems: 'flex-start' }, error && ms.inputInvalid]}>
         {icon && <MaterialIcons name={icon} size={18} color={C.dim} style={{ marginTop: multiline ? 11 : 0 }} />}
         <TextInput
           style={[ms.input, multiline && { height: 70, textAlignVertical: 'top' }]}
@@ -223,14 +223,20 @@ export function Input({ label, placeholder, value, onChangeText, multiline, keyb
           multiline={multiline}
           keyboardType={keyboardType}
           secureTextEntry={secureTextEntry}
+          editable={editable}
+          autoCapitalize={autoCapitalize}
+          textContentType={textContentType}
+          accessibilityLabel={accessibilityLabel || label || placeholder}
         />
       </View>
+      {error ? <Text accessibilityLiveRegion="polite" style={ms.inputError}>{error}</Text> : null}
     </View>
   );
 }
 
 /* ────── Form Modal ────── */
-export function FormModal({ visible, title, subtitle, onClose, onSubmit, submitLabel = 'Save', children }) {
+export function FormModal({ visible, title, subtitle, onClose, onSubmit, submitLabel = 'Save', children, busy = false, disableSubmit = false }) {
+  const submitDisabled = busy || disableSubmit;
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={ms.modalOverlay}>
@@ -240,7 +246,7 @@ export function FormModal({ visible, title, subtitle, onClose, onSubmit, submitL
               <Text style={ms.modalTitle}>{title}</Text>
               {subtitle ? <Text style={ms.modalSubtitle}>{subtitle}</Text> : null}
             </View>
-            <TouchableOpacity onPress={onClose} style={ms.modalClose}>
+            <TouchableOpacity onPress={onClose} style={ms.modalClose} accessibilityRole="button" accessibilityLabel="Close dialog" hitSlop={8}>
               <MaterialIcons name="close" size={20} color={C.muted} />
             </TouchableOpacity>
           </View>
@@ -248,11 +254,22 @@ export function FormModal({ visible, title, subtitle, onClose, onSubmit, submitL
             {children}
           </ScrollView>
           <View style={ms.modalFooter}>
-            <TouchableOpacity style={ms.cancelBtn} onPress={onClose}>
+            <TouchableOpacity style={ms.cancelBtn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cancel">
               <Text style={ms.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={ms.submitBtn} onPress={onSubmit}>
-              <MaterialIcons name="check" size={18} color="#fff" />
+            <TouchableOpacity
+              style={[ms.submitBtn, submitDisabled && ms.submitBtnDisabled]}
+              onPress={onSubmit}
+              disabled={submitDisabled}
+              accessibilityRole="button"
+              accessibilityLabel={submitLabel}
+              accessibilityState={{ disabled: submitDisabled, busy }}
+            >
+              {busy ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <MaterialIcons name="check" size={18} color="#fff" />
+              )}
               <Text style={ms.submitBtnText}>{submitLabel}</Text>
             </TouchableOpacity>
           </View>
@@ -278,16 +295,16 @@ export function PickerModal({ visible, title, data, renderLabel, renderSub, onSe
               <Text style={ms.modalTitle}>{title}</Text>
               <Text style={ms.modalSubtitle}>Tap to select</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={ms.modalClose}>
+            <TouchableOpacity onPress={onClose} style={ms.modalClose} accessibilityRole="button" accessibilityLabel="Close dialog" hitSlop={8}>
               <MaterialIcons name="close" size={20} color={C.muted} />
             </TouchableOpacity>
           </View>
           <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
             <View style={ms.searchRow}>
               <MaterialIcons name="search" size={18} color={C.dim} />
-              <TextInput style={ms.searchInput} placeholder="Search…" placeholderTextColor={C.dim} value={search} onChangeText={setSearch} />
+              <TextInput style={ms.searchInput} placeholder="Search…" placeholderTextColor={C.dim} value={search} onChangeText={setSearch} accessibilityLabel="Search list" />
               {search ? (
-                <TouchableOpacity onPress={() => setSearch('')}>
+                <TouchableOpacity onPress={() => setSearch('')} accessibilityRole="button" accessibilityLabel="Clear search" hitSlop={8}>
                   <MaterialIcons name="close" size={16} color={C.dim} />
                 </TouchableOpacity>
               ) : null}
@@ -332,7 +349,15 @@ export function TabBar({ tabs, active, onChange }) {
   return (
     <View style={ms.tabBar}>
       {tabs.map(t => (
-        <TouchableOpacity key={t.key} style={[ms.tab, active === t.key && ms.tabActive]} onPress={() => onChange(t.key)} activeOpacity={0.7}>
+        <TouchableOpacity
+          key={t.key}
+          style={[ms.tab, active === t.key && ms.tabActive]}
+          onPress={() => onChange(t.key)}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: active === t.key }}
+          accessibilityLabel={t.label}
+        >
           <MaterialIcons name={t.icon} size={16} color={active === t.key ? '#fff' : C.muted} />
           <Text style={[ms.tabText, active === t.key && ms.tabTextActive]}>{t.label}</Text>
         </TouchableOpacity>
@@ -384,8 +409,8 @@ export const ms = StyleSheet.create({
 
   /* Chips */
   chipRow: { marginBottom: 4, gap: 8, marginTop: 8 },
-  chipLabel: { fontSize: 10, fontWeight: '700', color: C.dim, letterSpacing: 1.2 },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
+  chipLabel: { fontSize: 12, fontWeight: '600', color: C.dim },
+  chip: { paddingHorizontal: 16, paddingVertical: 8, minHeight: 44, justifyContent: 'center', borderRadius: 20, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
   chipActive: { backgroundColor: C.accent, borderColor: C.accent },
   chipText: { fontSize: 13, fontWeight: '500', color: C.muted },
   chipTextActive: { color: '#fff', fontWeight: '600' },
@@ -422,7 +447,7 @@ export const ms = StyleSheet.create({
 
   /* Tabs */
   tabBar: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
+  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, minHeight: 44, borderRadius: 10, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
   tabActive: { backgroundColor: C.accent, borderColor: C.accent },
   tabText: { fontSize: 13, fontWeight: '500', color: C.muted },
   tabTextActive: { color: '#fff', fontWeight: '600' },
@@ -444,12 +469,15 @@ export const ms = StyleSheet.create({
   cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: C.surfaceAlt, alignItems: 'center', borderWidth: 1, borderColor: C.border },
   cancelBtnText: { fontSize: 14, fontWeight: '500', color: C.muted },
   submitBtn: { flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 10, backgroundColor: C.accent },
+  submitBtnDisabled: { opacity: 0.45 },
   submitBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 
   /* Input */
   inputWrap: { marginBottom: 4 },
   inputLabel: { fontSize: 12, fontWeight: '600', color: C.muted, marginBottom: 6, marginLeft: 2 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.surface, borderRadius: 10, paddingHorizontal: 14, borderWidth: 1, borderColor: C.border },
+  inputInvalid: { borderColor: '#ef4444' },
+  inputError: { fontSize: 12, fontWeight: '500', color: '#ef4444', marginTop: 6, marginLeft: 2 },
   input: { flex: 1, fontSize: 14, color: C.text, paddingVertical: 12 },
 
   /* Search */

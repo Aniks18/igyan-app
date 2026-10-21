@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../utils/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';

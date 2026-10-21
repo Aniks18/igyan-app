@@ -7,11 +7,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   Animated,
   Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../../components';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -23,10 +22,10 @@ const COLORS = {
   background: "#f5f8ff",
   surface: "#ffffff",
   surfaceLight: "#f0f5ff",
-  primary: '#8B5CF6',
-  primaryHover: '#7C3AED',
-  secondary: '#D946EF',
-  cyan: '#00d4ff',
+  primary: "#4f46e5",
+  primaryHover: '#4338ca',
+  secondary: '#0955b9',
+  cyan: '#0955b9',
   text: "#12305c",
   textMuted: "#476b9c",
   textLight: "#476b9c",
@@ -40,7 +39,7 @@ const COLORS = {
 };
 
 // Quiz Setup Form Component
-const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating }) => {
+const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating, formError, generateError }) => {
   const difficulties = [
     { value: 'easy', label: 'Easy', icon: 'leaf.fill' },
     { value: 'medium', label: 'Medium', icon: 'flame.fill' },
@@ -72,12 +71,29 @@ const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating }) => {
             Quiz Topic <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, formError && styles.inputInvalid]}
             value={formData.topic}
             onChangeText={(value) => onInputChange('topic', value)}
             placeholder="E.g., JavaScript, World History, Physics..."
             placeholderTextColor={COLORS.textLight}
+            accessibilityLabel="Quiz topic, required"
+            returnKeyType="done"
           />
+          {formError ? <Text accessibilityLiveRegion="polite" style={styles.formError}>{formError}</Text> : null}
+          {generateError ? (
+            <View style={styles.generateErrorBox}>
+              <Text accessibilityLiveRegion="polite" style={styles.generateErrorText}>{generateError}</Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={onSubmit}
+                disabled={generating}
+                accessibilityRole="button"
+                accessibilityLabel="Try generating the quiz again"
+              >
+                <Text style={styles.retryButtonText}>Try again</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
 
         {/* Focus Area */}
@@ -89,6 +105,7 @@ const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating }) => {
             onChangeText={(value) => onInputChange('focusArea', value)}
             placeholder="E.g., async/await, Renaissance period..."
             placeholderTextColor={COLORS.textLight}
+            accessibilityLabel="Focus area, optional"
           />
         </View>
 
@@ -104,6 +121,9 @@ const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating }) => {
                   formData.difficulty === diff.value && styles.optionButtonActive,
                 ]}
                 onPress={() => onInputChange('difficulty', diff.value)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: formData.difficulty === diff.value }}
+                accessibilityLabel={`${diff.label} difficulty`}
               >
                 <IconSymbol
                   name={diff.icon}
@@ -135,6 +155,9 @@ const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating }) => {
                   formData.questionCount === count && styles.countButtonActive,
                 ]}
                 onPress={() => onInputChange('questionCount', count)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: formData.questionCount === count }}
+                accessibilityLabel={`${count} questions`}
               >
                 <Text
                   style={[
@@ -154,6 +177,9 @@ const QuizSetupForm = ({ formData, onInputChange, onSubmit, generating }) => {
           style={[styles.submitButton, generating && styles.submitButtonDisabled]}
           onPress={onSubmit}
           disabled={generating}
+          accessibilityRole="button"
+          accessibilityLabel="Generate quiz"
+          accessibilityState={{ disabled: generating, busy: generating }}
         >
           {generating ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -226,11 +252,11 @@ const QuizPreview = ({ quiz, formData, onStartQuiz, onRestartQuiz }) => {
         </View>
 
         <View style={styles.previewActions}>
-          <TouchableOpacity style={styles.startButton} onPress={onStartQuiz}>
+          <TouchableOpacity style={styles.startButton} onPress={onStartQuiz} accessibilityRole="button" accessibilityLabel="Start quiz">
             <IconSymbol name="play.fill" size={20} color="#fff" />
             <Text style={styles.startButtonText}>Start Quiz</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.newQuizButton} onPress={onRestartQuiz}>
+          <TouchableOpacity style={styles.newQuizButton} onPress={onRestartQuiz} accessibilityRole="button" accessibilityLabel="Discard quiz and create a new one">
             <IconSymbol name="arrow.counterclockwise" size={18} color={COLORS.textMuted} />
             <Text style={styles.newQuizButtonText}>New Quiz</Text>
           </TouchableOpacity>
@@ -299,6 +325,9 @@ const QuizQuestion = ({ question, questionNumber, totalQuestions, selectedAnswer
             onPress={() => !selectedAnswer && onAnswerSelect(question.id, option.id)}
             disabled={!!selectedAnswer}
             activeOpacity={0.7}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: selectedAnswer === option.id, disabled: !!selectedAnswer }}
+            accessibilityLabel={`Answer ${option.id}: ${option.text}`}
           >
             <View style={[styles.answerLabel, getOptionLabelStyle(option.id)]}>
               <Text style={styles.answerLabelText}>{option.id}</Text>
@@ -349,10 +378,10 @@ const QuizResults = ({ quiz, userAnswers, score, onRestartQuiz, onReviewAnswers 
   const strokeDashoffset = circumference * (1 - score.percentage / 100);
 
   const getPerformance = () => {
-    if (score.percentage >= 90) return { title: 'Outstanding! 🎉', color: COLORS.success, message: "You've mastered this topic!" };
-    if (score.percentage >= 70) return { title: 'Great Job! 👏', color: COLORS.cyan, message: 'You have a solid understanding.' };
-    if (score.percentage >= 50) return { title: 'Good Effort! 💪', color: COLORS.warning, message: "You're on the right track!" };
-    return { title: 'Keep Learning! 📚', color: COLORS.error, message: "Don't give up! Review and retry." };
+    if (score.percentage >= 90) return { title: 'Outstanding!', color: COLORS.success, message: "You've mastered this topic!" };
+    if (score.percentage >= 70) return { title: 'Great job!', color: COLORS.cyan, message: 'You have a solid understanding.' };
+    if (score.percentage >= 50) return { title: 'Good effort!', color: COLORS.warning, message: "You're on the right track!" };
+    return { title: 'Keep learning!', color: COLORS.error, message: "Don't give up! Review and retry." };
   };
 
   const performance = getPerformance();
@@ -410,7 +439,7 @@ const QuizResults = ({ quiz, userAnswers, score, onRestartQuiz, onReviewAnswers 
             <Text style={[styles.statBoxValue, { color: COLORS.error }]}>{score.total - score.correct}</Text>
             <Text style={styles.statBoxLabel}>Incorrect</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: 'rgba(0, 212, 255, 0.15)' }]}>
+          <View style={[styles.statBox, { backgroundColor: 'rgba(9, 85, 185, 0.12)' }]}>
             <Text style={[styles.statBoxValue, { color: COLORS.cyan }]}>{score.total}</Text>
             <Text style={styles.statBoxLabel}>Total</Text>
           </View>
@@ -442,11 +471,11 @@ const QuizResults = ({ quiz, userAnswers, score, onRestartQuiz, onReviewAnswers 
 
         {/* Actions */}
         <View style={styles.resultsActions}>
-          <TouchableOpacity style={styles.reviewButton} onPress={onReviewAnswers}>
+          <TouchableOpacity style={styles.reviewButton} onPress={onReviewAnswers} accessibilityRole="button" accessibilityLabel="Review your answers">
             <IconSymbol name="eye.fill" size={18} color={COLORS.cyan} />
             <Text style={styles.reviewButtonText}>Review Answers</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.newQuizButtonLarge} onPress={onRestartQuiz}>
+          <TouchableOpacity style={styles.newQuizButtonLarge} onPress={onRestartQuiz} accessibilityRole="button" accessibilityLabel="Start a new quiz">
             <IconSymbol name="plus.circle.fill" size={20} color="#fff" />
             <Text style={styles.newQuizButtonLargeText}>New Quiz</Text>
           </TouchableOpacity>
@@ -458,7 +487,6 @@ const QuizResults = ({ quiz, userAnswers, score, onRestartQuiz, onReviewAnswers 
 
 // Main Quiz Me Page
 export default function QuizMePage() {
-  const router = useRouter();
   
   const [formData, setFormData] = useState({
     topic: '',
@@ -472,16 +500,21 @@ export default function QuizMePage() {
   const [userAnswers, setUserAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [generateError, setGenerateError] = useState('');
 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'topic') setFormError('');
   };
 
   const handleSubmit = async () => {
     if (!formData.topic.trim()) {
-      Alert.alert('Error', 'Please enter a quiz topic');
+      setFormError('Enter a quiz topic to generate your quiz.');
       return;
     }
+    setFormError('');
+    setGenerateError('');
 
     setGenerating(true);
     setQuiz(null);
@@ -552,7 +585,7 @@ Provide ONLY valid JSON, no additional commentary.`;
       setQuiz(generatedQuiz);
     } catch (error) {
       console.error('Error generating quiz:', error);
-      Alert.alert('Error', 'Failed to generate quiz. Please try again.');
+      setGenerateError('Quiz generation failed. Check your connection and try again.');
     } finally {
       setGenerating(false);
     }
@@ -606,14 +639,10 @@ Provide ONLY valid JSON, no additional commentary.`;
   const currentQuestion = quiz?.questions?.[currentQuestionIndex];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity style={styles.menuButton} onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={styles.topBarTitle}>Quiz Me</Text>
-        <View style={styles.backButton} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -624,6 +653,8 @@ Provide ONLY valid JSON, no additional commentary.`;
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
             generating={generating}
+            formError={formError}
+            generateError={generateError}
           />
         )}
 
@@ -678,6 +709,9 @@ Provide ONLY valid JSON, no additional commentary.`;
                 style={[styles.navButton, currentQuestionIndex === 0 && styles.navButtonDisabled]}
                 onPress={handlePreviousQuestion}
                 disabled={currentQuestionIndex === 0}
+                accessibilityRole="button"
+                accessibilityLabel="Previous question"
+                accessibilityState={{ disabled: currentQuestionIndex === 0 }}
               >
                 <IconSymbol name="chevron.left" size={18} color="#fff" />
                 <Text style={styles.navButtonText}>Previous</Text>
@@ -691,6 +725,9 @@ Provide ONLY valid JSON, no additional commentary.`;
                 ]}
                 onPress={handleNextQuestion}
                 disabled={!userAnswers[currentQuestion.id]}
+                accessibilityRole="button"
+                accessibilityLabel={currentQuestionIndex === quiz.questions.length - 1 ? 'Finish quiz' : 'Next question'}
+                accessibilityState={{ disabled: !userAnswers[currentQuestion.id] }}
               >
                 <Text style={styles.navButtonText}>
                   {currentQuestionIndex === quiz.questions.length - 1 ? 'Finish' : 'Next'}
@@ -716,7 +753,7 @@ Provide ONLY valid JSON, no additional commentary.`;
           />
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -728,24 +765,18 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingTop: 50,
+    paddingTop: 12,
     paddingBottom: 16,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  menuButton: {
-    padding: 8,
-  },
   topBarTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-  },
-  backButton: {
-    padding: 8,
   },
   content: {
     flex: 1,
@@ -816,6 +847,42 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  inputInvalid: {
+    borderColor: COLORS.error,
+  },
+  formError: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.error,
+    marginTop: 8,
+  },
+  generateErrorBox: {
+    marginTop: 12,
+    backgroundColor: COLORS.errorLight,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+  },
+  generateErrorText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.text,
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   optionsRow: {
     flexDirection: 'row',

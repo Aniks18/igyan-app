@@ -4,7 +4,6 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -23,31 +22,62 @@ export default function ManageClassesPage() {
   const [classes, setClasses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [adding, setAdding] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => { boot(); }, []);
+  const reload = useCallback(async () => {
+    if (session) setClasses(await getClasses(user.school_id, session.id));
+  }, [user?.school_id, session]);
 
-  const boot = async () => {
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
       setSession(sess);
       if (sess) setClasses(await getClasses(user.school_id, sess.id));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError('Could not load classes. Check your connection and try again.');
+    }
     finally { setLoading(false); }
+  }, [user?.school_id]);
+
+  useEffect(() => { boot(); }, [boot]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reload();
+    } catch (e) {
+      console.error(e);
+    } finally { setRefreshing(false); }
+  }, [reload]);
+
+  const updateForm = (patch) => {
+    setForm(p => ({ ...p, ...patch }));
+    setFieldErrors({});
   };
 
-  const reload = async () => { if (session) setClasses(await getClasses(user.school_id, session.id)); };
-  const onRefresh = useCallback(async () => { setRefreshing(true); await reload(); setRefreshing(false); }, [session]);
-
   const handleAdd = async () => {
-    if (!form.className?.trim()) return Alert.alert('Required', 'Please enter a class name');
-    if (!session) return Alert.alert('Error', 'No active academic session found');
+    if (adding) return;
+    if (!form.className?.trim()) {
+      setFieldErrors({ className: 'Enter the class name.' });
+      return;
+    }
+    if (!session) {
+      setFieldErrors({ className: 'No active academic session found.' });
+      return;
+    }
+    setAdding(true);
     try {
       await addClass({ schoolId: user.school_id, sessionId: session.id, className: form.className.trim(), section: form.section?.trim() || 'A', roomNumber: form.roomNumber?.trim(), capacity: form.capacity?.trim() });
-      setShowModal(false); setForm({});
+      setShowModal(false); setForm({}); setFieldErrors({});
       await reload();
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setAdding(false); }
   };
 
   const handleDelete = (id, name) => {
@@ -60,7 +90,7 @@ export default function ManageClassesPage() {
   if (!isAdmin) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Classes" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Classes" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="lock" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>Access Restricted</Text>
@@ -73,8 +103,19 @@ export default function ManageClassesPage() {
   if (loading) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Classes" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Classes" onMenuPress={openSideNav} />
         <View style={ms.center}><ActivityIndicator size="large" color={C.accent} /><Text style={ms.mutedText}>Loading classes…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={ms.root}>
+        <Header title="Manage Classes" onMenuPress={openSideNav} />
+        <View style={ms.scrollInner}>
+          <EmptyState icon="cloud-off" title="Could not load classes" text={loadError} onAction={boot} actionLabel="Try again" />
+        </View>
       </View>
     );
   }
@@ -82,7 +123,7 @@ export default function ManageClassesPage() {
   if (!session) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Classes" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Classes" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="event-busy" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>No Active Session</Text>
@@ -94,7 +135,7 @@ export default function ManageClassesPage() {
 
   return (
     <View style={ms.root}>
-      <Header title="Manage Classes" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Manage Classes" onMenuPress={openSideNav} />
       <SessionBanner session={session} />
 
       <PageBanner icon="layers" title="School Classes" subtitle={`Classes for ${session.session_name}`} count={classes.length} accentColor={C.green} />
@@ -119,11 +160,11 @@ export default function ManageClassesPage() {
         )}
       </ScrollView>
 
-      <FormModal visible={showModal} title="Add Class" subtitle="Create a new class for this session" onClose={() => setShowModal(false)} onSubmit={handleAdd} submitLabel="Add Class">
-        <Input label="Class Name" placeholder="e.g. 10, XII, Nursery" value={form.className} onChangeText={v => setForm(p => ({ ...p, className: v }))} icon="layers" />
-        <Input label="Section" placeholder="Default: A" value={form.section} onChangeText={v => setForm(p => ({ ...p, section: v }))} icon="grid-view" />
-        <Input label="Room Number (optional)" placeholder="e.g. 201, Lab-3" value={form.roomNumber} onChangeText={v => setForm(p => ({ ...p, roomNumber: v }))} icon="meeting-room" />
-        <Input label="Capacity (optional)" placeholder="Max students" value={form.capacity} onChangeText={v => setForm(p => ({ ...p, capacity: v }))} keyboardType="numeric" icon="people" />
+      <FormModal visible={showModal} title="Add Class" subtitle="Create a new class for this session" onClose={() => { setShowModal(false); setFieldErrors({}); }} onSubmit={handleAdd} submitLabel="Add Class" busy={adding}>
+        <Input label="Class Name" placeholder="e.g. 10, XII, Nursery" value={form.className} onChangeText={v => updateForm({ className: v })} icon="layers" error={fieldErrors.className} editable={!adding} />
+        <Input label="Section" placeholder="Default: A" value={form.section} onChangeText={v => updateForm({ section: v })} icon="grid-view" autoCapitalize="none" editable={!adding} />
+        <Input label="Room Number (optional)" placeholder="e.g. 201, Lab-3" value={form.roomNumber} onChangeText={v => updateForm({ roomNumber: v })} icon="meeting-room" autoCapitalize="none" editable={!adding} />
+        <Input label="Capacity (optional)" placeholder="Max students" value={form.capacity} onChangeText={v => updateForm({ capacity: v })} keyboardType="numeric" icon="people" editable={!adding} />
       </FormModal>
     </View>
   );

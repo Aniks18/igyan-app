@@ -4,7 +4,6 @@
 
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Switch, ScrollView } from 'react-native';
-import { router } from 'expo-router';
 import { ThemedView } from '../components/ThemedView';
 import { ThemedText } from '../components/ThemedText';
 import { IconSymbol } from '../components/IconSymbol';
@@ -25,8 +24,6 @@ export default function SettingsScreen() {
       <Header 
         title="Settings" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
       />
       <ScrollView style={styles.content}>
         <View style={styles.section}>

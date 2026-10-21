@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { IconSymbol } from '../IconSymbol';
-import { useThemeColor } from '../../hooks/useThemeColor';
 
 export default function CopilotSidebar({
   sidebarView,

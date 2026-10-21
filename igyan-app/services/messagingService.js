@@ -9,6 +9,23 @@ const err = (res, label) => {
   return res.data;
 };
 
+// Client-side membership check (defense-in-depth; real enforcement must be
+// server-side RLS). Throws unless userId is the parent or teacher of the
+// conversation.
+async function assertParticipant(conversationId, userId) {
+  if (!conversationId || !userId) throw new Error('Not authorized.');
+  const res = await supabase
+    .from('parent_teacher_conversations')
+    .select('parent_id, teacher_id')
+    .eq('id', conversationId)
+    .single();
+  if (res.error || !res.data) throw new Error('Conversation not found.');
+  if (userId !== res.data.parent_id && userId !== res.data.teacher_id) {
+    throw new Error('Not authorized to access this conversation.');
+  }
+  return res.data;
+}
+
 // ─── CONVERSATIONS ──────────────────────────────────────────
 
 /** Get all conversations for a user (parent or teacher) */
@@ -51,8 +68,9 @@ export async function getOrCreateConversation({ schoolId, parentId, teacherId, s
 
 // ─── MESSAGES ───────────────────────────────────────────────
 
-/** Get messages for a conversation */
-export async function getMessages(conversationId, limit = 50, offset = 0) {
+/** Get messages for a conversation (membership-verified when userId is given) */
+export async function getMessages(conversationId, userId = null, limit = 50, offset = 0) {
+  if (userId) await assertParticipant(conversationId, userId);
   const res = await supabase
     .from('parent_teacher_messages')
     .select(`
@@ -68,6 +86,7 @@ export async function getMessages(conversationId, limit = 50, offset = 0) {
 
 /** Send a message */
 export async function sendMessage({ conversationId, schoolId, senderId, senderRole, messageText, flag = 'general', flagLabel = null, repliedToId = null }) {
+  await assertParticipant(conversationId, senderId);
   const res = await supabase
     .from('parent_teacher_messages')
     .insert({
@@ -111,6 +130,7 @@ export async function sendMessage({ conversationId, schoolId, senderId, senderRo
 
 /** Mark messages as read for a conversation */
 export async function markMessagesRead(conversationId, readerId, readerRole) {
+  await assertParticipant(conversationId, readerId);
   const senderRole = readerRole === 'parent' ? 'faculty' : 'parent';
   await supabase
     .from('parent_teacher_messages')
@@ -127,8 +147,18 @@ export async function markMessagesRead(conversationId, readerId, readerRole) {
     .eq('id', conversationId);
 }
 
-/** Delete (soft) a message */
-export async function deleteMessage(messageId) {
+/** Delete (soft) a message — only its sender may delete it */
+export async function deleteMessage(messageId, userId) {
+  if (!messageId || !userId) throw new Error('Not authorized.');
+  const owner = await supabase
+    .from('parent_teacher_messages')
+    .select('sender_id')
+    .eq('id', messageId)
+    .single();
+  if (owner.error || !owner.data) throw new Error('Message not found.');
+  if (owner.data.sender_id !== userId) {
+    throw new Error('Not authorized to delete this message.');
+  }
   const res = await supabase
     .from('parent_teacher_messages')
     .update({ is_deleted: true, updated_at: new Date().toISOString() })

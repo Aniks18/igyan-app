@@ -2,7 +2,7 @@
  * Content Generator - Slide Preview Component (for Shark PPT)
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { IconSymbol } from '../IconSymbol';
 import { useThemeColor } from '../../hooks/useThemeColor';
@@ -32,24 +32,28 @@ export default function SlidePreview({
           <Text style={styles.slideNumberText}>{index + 1}</Text>
         </View>
         <View style={styles.slideHeaderInfo}>
-          <Text style={[styles.slideTitle, { color: textColor }]}>
-            {isEditing ? (
-              <TextInput
-                style={[styles.editInput, styles.titleInput, { color: textColor, borderColor }]}
-                value={slide.title}
-                onChangeText={(val) => onSlideChange('title', val)}
-              />
-            ) : (
-              slide.title
-            )}
-          </Text>
+          {isEditing ? (
+            <TextInput
+              style={[styles.editInput, styles.titleInput, { color: textColor, borderColor }]}
+              value={slide.title}
+              onChangeText={(val) => onSlideChange('title', val)}
+              accessibilityLabel="Slide title"
+            />
+          ) : (
+            <Text style={[styles.slideTitle, { color: textColor }]}>
+              {slide.title}
+            </Text>
+          )}
           {slide.timing && (
-            <Text style={styles.timing}>⏱️ {slide.timing}</Text>
+            <Text style={styles.timing}>{slide.timing}</Text>
           )}
         </View>
         <TouchableOpacity
           style={styles.editButton}
           onPress={isEditing ? onSave : onEdit}
+          accessibilityRole="button"
+          accessibilityLabel={isEditing ? 'Save slide title' : 'Edit slide title'}
+          hitSlop={8}
         >
           <IconSymbol
             name={isEditing ? 'checkmark' : 'pencil'}
@@ -68,7 +72,7 @@ export default function SlidePreview({
               value={slide.subtitle}
               onChangeText={(val) => onSlideChange('subtitle', val)}
               placeholder="Subtitle"
-              placeholderTextColor="#999"
+              placeholderTextColor="#476b9c"
             />
           ) : (
             <Text style={[styles.subtitle, { color: primaryColor }]}>{slide.subtitle}</Text>
@@ -87,7 +91,7 @@ export default function SlidePreview({
             numberOfLines={5}
             textAlignVertical="top"
             placeholder="Bullet points..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#476b9c"
           />
         ) : (
           <Text style={[styles.content, { color: textColor }]}>{slide.content}</Text>
@@ -109,14 +113,14 @@ export default function SlidePreview({
                     value={metric.value}
                     onChangeText={(val) => onMetricChange(metricIdx, 'value', val)}
                     placeholder="Value"
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#476b9c"
                   />
                   <TextInput
                     style={[styles.metricLabelInput, { color: textColor }]}
                     value={metric.label}
                     onChangeText={(val) => onMetricChange(metricIdx, 'label', val)}
                     placeholder="Label"
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#476b9c"
                   />
                 </>
               ) : (
@@ -135,19 +139,21 @@ export default function SlidePreview({
       {/* Tagline */}
       {slide.tagline && !isEditing && (
         <Text style={[styles.tagline, { borderTopColor: borderColor }]}>
-          💡 {slide.tagline}
+          {slide.tagline}
         </Text>
       )}
 
       {/* Edit Actions */}
       {isEditing && (
         <View style={styles.editActions}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+          <TouchableOpacity style={styles.cancelButton} onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel slide edits">
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: primaryColor }]}
             onPress={onSave}
+            accessibilityRole="button"
+            accessibilityLabel="Save slide changes"
           >
             <Text style={styles.saveText}>Save Changes</Text>
           </TouchableOpacity>
@@ -191,11 +197,14 @@ const styles = StyleSheet.create({
   },
   timing: {
     fontSize: 12,
-    color: '#999',
+    color: '#64748b',
     marginTop: 2,
   },
   editButton: {
-    padding: 8,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   subtitleContainer: {
     marginBottom: 12,
@@ -272,14 +281,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: "#d9e3f3",
   },
   cancelButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   cancelText: {
-    color: '#999',
+    color: "#476b9c",
     fontSize: 14,
     fontWeight: '500',
   },
@@ -287,6 +298,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   saveText: {
     color: "#12305c",

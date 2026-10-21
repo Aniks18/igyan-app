@@ -9,10 +9,14 @@ import { IconSymbol } from '../IconSymbol';
 export default function VivaAvatar({ isListening, isSpeaking, isPitchMode, onStopSpeaking }) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const pulseLoop = useRef(null);
+  const rotateLoop = useRef(null);
 
   useEffect(() => {
+    pulseLoop.current?.stop();
+    pulseLoop.current = null;
     if (isListening || isSpeaking) {
-      Animated.loop(
+      pulseLoop.current = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.15,
@@ -25,25 +29,37 @@ export default function VivaAvatar({ isListening, isSpeaking, isPitchMode, onSto
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
+      pulseLoop.current.start();
     } else {
       pulseAnim.setValue(1);
     }
-  }, [isListening, isSpeaking]);
+    return () => {
+      pulseLoop.current?.stop();
+      pulseLoop.current = null;
+    };
+  }, [isListening, isSpeaking, pulseAnim]);
 
   useEffect(() => {
+    rotateLoop.current?.stop();
+    rotateLoop.current = null;
     if (isPitchMode) {
-      Animated.loop(
+      rotateLoop.current = Animated.loop(
         Animated.timing(rotateAnim, {
           toValue: 1,
           duration: 8000,
           useNativeDriver: true,
         })
-      ).start();
+      );
+      rotateLoop.current.start();
     } else {
       rotateAnim.setValue(0);
     }
-  }, [isPitchMode]);
+    return () => {
+      rotateLoop.current?.stop();
+      rotateLoop.current = null;
+    };
+  }, [isPitchMode, rotateAnim]);
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],

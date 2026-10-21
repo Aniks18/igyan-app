@@ -17,7 +17,6 @@ import {
   Platform,
   Animated,
 } from 'react-native';
-import { router } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Speech from 'expo-speech';
 import { ThemedView } from '../../components/ThemedView';
@@ -449,8 +448,6 @@ Be encouraging but honest. Provide actionable advice. Keep responses concise and
       <Header
         title="Viva AI"
         onMenuPress={openSideNav}
-        showBack
-        onBackPress={() => router.back()}
       />
 
       <KeyboardAvoidingView

@@ -25,6 +25,9 @@ export default function TemplateSelector({ templates, selected, onSelect }) {
           ]}
           onPress={() => onSelect(template)}
           activeOpacity={0.7}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: selected.id === template.id }}
+          accessibilityLabel={`${template.name} template`}
         >
           {/* Color Preview */}
           <View style={styles.colorPreview}>

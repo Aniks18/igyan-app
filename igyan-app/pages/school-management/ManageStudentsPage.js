@@ -4,7 +4,6 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -32,12 +31,17 @@ export default function ManageStudentsPage() {
   const [showEnrollPicker, setShowEnrollPicker] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [form, setForm] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [adding, setAdding] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => { boot(); }, []);
-  useEffect(() => { if (selectedClassId) loadClassStudents(); }, [selectedClassId]);
+  const loadClassStudents = useCallback(async () => {
+    if (selectedClassId) setClassStudents(await getClassStudents(selectedClassId));
+  }, [selectedClassId]);
 
-  const boot = async () => {
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
@@ -47,13 +51,34 @@ export default function ManageStudentsPage() {
       setClasses(cls);
       setStudents(studs);
       if (cls.length > 0) setSelectedClassId(cls[0].id);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError('Could not load students. Check your connection and try again.');
+    }
     finally { setLoading(false); }
+  }, [user?.school_id]);
+
+  useEffect(() => { boot(); }, [boot]);
+  useEffect(() => { if (selectedClassId) loadClassStudents(); }, [selectedClassId, loadClassStudents]);
+
+  const reloadStudents = useCallback(async () => {
+    setStudents(await getSchoolStudents(user.school_id));
+    await loadClassStudents();
+  }, [user?.school_id, loadClassStudents]);
+
+  const updateForm = (patch) => {
+    setForm(p => ({ ...p, ...patch }));
+    setFieldErrors({});
   };
 
-  const loadClassStudents = async () => { if (selectedClassId) setClassStudents(await getClassStudents(selectedClassId)); };
-  const reloadStudents = async () => { setStudents(await getSchoolStudents(user.school_id)); await loadClassStudents(); };
-  const onRefresh = useCallback(async () => { setRefreshing(true); await reloadStudents(); setRefreshing(false); }, [selectedClassId]);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reloadStudents();
+    } catch (e) {
+      console.error(e);
+    } finally { setRefreshing(false); }
+  }, [reloadStudents]);
 
   const handleEnroll = async (student) => {
     if (!selectedClassId || !session) return;
@@ -72,15 +97,23 @@ export default function ManageStudentsPage() {
   };
 
   const handleAddUser = async () => {
+    if (adding) return;
     const { fullName, email, password, phone } = form;
-    if (!fullName?.trim() || !email?.trim() || !password?.trim()) return Alert.alert('Required', 'Please fill in name, email and password');
+    const errors = {};
+    if (!fullName?.trim()) errors.fullName = 'Enter the full name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || '').trim())) errors.email = 'Enter a valid email address.';
+    if ((password || '').length < 6) errors.password = 'Password must be at least 6 characters.';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setAdding(true);
     try {
       const passwordHash = await hashPassword(password.trim());
       await addUser({ schoolId: user.school_id, fullName: fullName.trim(), email: email.trim().toLowerCase(), passwordHash, role: 'student', phone: phone?.trim() });
-      setShowAddUser(false); setForm({});
+      setShowAddUser(false); setForm({}); setFieldErrors({});
       Alert.alert('Success', 'Student account created successfully');
       await reloadStudents();
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setAdding(false); }
   };
 
   const enrolledIds = classStudents.map(cs => cs.student_id);
@@ -91,7 +124,7 @@ export default function ManageStudentsPage() {
   if (!isAdmin) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Students" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Students" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="lock" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>Access Restricted</Text>
@@ -104,8 +137,19 @@ export default function ManageStudentsPage() {
   if (loading) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Students" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Students" onMenuPress={openSideNav} />
         <View style={ms.center}><ActivityIndicator size="large" color={C.accent} /><Text style={ms.mutedText}>Loading students…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={ms.root}>
+        <Header title="Manage Students" onMenuPress={openSideNav} />
+        <View style={ms.scrollInner}>
+          <EmptyState icon="cloud-off" title="Could not load students" text={loadError} onAction={boot} actionLabel="Try again" />
+        </View>
       </View>
     );
   }
@@ -113,7 +157,7 @@ export default function ManageStudentsPage() {
   if (!session) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Students" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Students" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="event-busy" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>No Active Session</Text>
@@ -125,7 +169,7 @@ export default function ManageStudentsPage() {
 
   return (
     <View style={ms.root}>
-      <Header title="Manage Students" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Manage Students" onMenuPress={openSideNav} />
       <SessionBanner session={session} />
 
       <TabBar
@@ -194,11 +238,11 @@ export default function ManageStudentsPage() {
       />
 
       {/* Add new student user */}
-      <FormModal visible={showAddUser} title="Add New Student" subtitle="Create a student account" onClose={() => setShowAddUser(false)} onSubmit={handleAddUser} submitLabel="Create Student">
-        <Input label="Full Name" placeholder="Student's full name" value={form.fullName} onChangeText={v => setForm(p => ({ ...p, fullName: v }))} icon="person" />
-        <Input label="Email Address" placeholder="student@example.com" value={form.email} onChangeText={v => setForm(p => ({ ...p, email: v }))} keyboardType="email-address" icon="email" />
-        <Input label="Password" placeholder="Create a password" value={form.password} onChangeText={v => setForm(p => ({ ...p, password: v }))} secureTextEntry icon="lock" />
-        <Input label="Phone (optional)" placeholder="Phone number" value={form.phone} onChangeText={v => setForm(p => ({ ...p, phone: v }))} keyboardType="phone-pad" icon="phone" />
+      <FormModal visible={showAddUser} title="Add New Student" subtitle="Create a student account" onClose={() => { setShowAddUser(false); setFieldErrors({}); }} onSubmit={handleAddUser} submitLabel="Create Student" busy={adding}>
+        <Input label="Full Name" placeholder="Student's full name" value={form.fullName} onChangeText={v => updateForm({ fullName: v })} icon="person" error={fieldErrors.fullName} autoCapitalize="words" textContentType="name" editable={!adding} />
+        <Input label="Email Address" placeholder="student@example.com" value={form.email} onChangeText={v => updateForm({ email: v })} keyboardType="email-address" icon="email" error={fieldErrors.email} autoCapitalize="none" textContentType="emailAddress" editable={!adding} />
+        <Input label="Password" placeholder="Create a password" value={form.password} onChangeText={v => updateForm({ password: v })} secureTextEntry icon="lock" error={fieldErrors.password} autoCapitalize="none" textContentType="newPassword" editable={!adding} />
+        <Input label="Phone (optional)" placeholder="Phone number" value={form.phone} onChangeText={v => updateForm({ phone: v })} keyboardType="phone-pad" icon="phone" autoCapitalize="none" textContentType="telephoneNumber" editable={!adding} />
       </FormModal>
     </View>
   );

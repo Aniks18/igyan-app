@@ -16,7 +16,6 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { router } from 'expo-router';
 import { File, Paths } from 'expo-file-system/next';
 import * as Sharing from 'expo-sharing';
 import PptxGenJS from 'pptxgenjs';
@@ -66,9 +65,11 @@ export default function ContentGeneratorPage() {
   const cardColor = useThemeColor({}, 'card');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
+  const mutedColor = useThemeColor({}, 'icon');
 
   // State
   const [topic, setTopic] = useState('');
+  const [generateError, setGenerateError] = useState('');
   const [contentType, setContentType] = useState('ppt'); // ppt, pdf, shark-ppt
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
@@ -144,9 +145,10 @@ Return JSON format:
   // Generate content
   const handleGenerate = async () => {
     if (!topic.trim()) {
-      Alert.alert('Error', 'Please enter a topic');
+      setGenerateError('Enter a topic to generate content.');
       return;
     }
+    setGenerateError('');
 
     setIsGenerating(true);
     setGeneratedContent(null);
@@ -190,7 +192,7 @@ Return JSON format:
       }
     } catch (error) {
       console.error('Generation error:', error);
-      Alert.alert('Error', 'Failed to generate content. Please try again.');
+      setGenerateError('Content generation failed. Check your connection and try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -594,7 +596,7 @@ Return JSON format:
         });
         
         Alert.alert(
-          'Success! 🎉',
+          'Success!',
           'Your PowerPoint presentation has been exported!\n\nOpen it with Microsoft PowerPoint, Google Slides, or any compatible app.',
           [{ text: 'Got it!' }]
         );
@@ -618,8 +620,6 @@ Return JSON format:
       <Header
         title="Content Generator"
         onMenuPress={openSideNav}
-        showBack
-        onBackPress={() => router.back()}
       />
 
       <ScrollView
@@ -665,19 +665,34 @@ Return JSON format:
                 {contentType === 'shark-ppt' ? 'Your Startup/Idea' : 'Enter Topic'}
               </ThemedText>
               <TextInput
-                style={[styles.input, { borderColor, color: textColor }]}
+                style={[styles.input, { borderColor, color: textColor }, generateError && styles.inputInvalid]}
                 placeholder={
                   contentType === 'shark-ppt'
                     ? 'e.g., AI-powered EdTech platform for rural India'
                     : 'e.g., Climate Change and Its Impact'
                 }
-                placeholderTextColor="#999"
+                placeholderTextColor={mutedColor}
                 value={topic}
-                onChangeText={setTopic}
+                onChangeText={value => { setTopic(value); if (generateError) setGenerateError(''); }}
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
+                accessibilityLabel={contentType === 'shark-ppt' ? 'Describe your startup or idea' : 'Enter topic'}
               />
+              {generateError ? (
+                <View style={styles.errorBox}>
+                  <ThemedText accessibilityLiveRegion="polite" style={styles.errorText}>{generateError}</ThemedText>
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={handleGenerate}
+                    disabled={isGenerating || !topic.trim()}
+                    accessibilityRole="button"
+                    accessibilityLabel="Try generating content again"
+                  >
+                    <Text style={styles.retryButtonText}>Try again</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
             </View>
 
             {/* Generate Button */}
@@ -688,6 +703,9 @@ Return JSON format:
               ]}
               onPress={handleGenerate}
               disabled={!topic.trim() || isGenerating}
+              accessibilityRole="button"
+              accessibilityLabel="Generate content"
+              accessibilityState={{ disabled: !topic.trim() || isGenerating, busy: isGenerating }}
             >
               {isGenerating ? (
                 <View style={styles.loadingRow}>
@@ -748,6 +766,9 @@ Return JSON format:
                 style={[styles.actionButton, styles.downloadButton, isDownloading && styles.disabledButton]}
                 onPress={handleDownload}
                 disabled={isDownloading}
+                accessibilityRole="button"
+                accessibilityLabel="Download presentation"
+                accessibilityState={{ disabled: isDownloading, busy: isDownloading }}
               >
                 {isDownloading ? (
                   <ActivityIndicator color="#fff" size="small" />
@@ -762,6 +783,8 @@ Return JSON format:
               <TouchableOpacity
                 style={[styles.actionButton, styles.resetButton]}
                 onPress={handleReset}
+                accessibilityRole="button"
+                accessibilityLabel="Start over with new content"
               >
                 <IconSymbol name="arrow.counterclockwise" size={20} color="#4f46e5" />
                 <Text style={[styles.actionButtonText, { color: "#4f46e5" }]}>
@@ -775,22 +798,22 @@ Return JSON format:
         {/* Features Info */}
         {!generatedContent && (
           <View style={styles.featuresSection}>
-            <ThemedText style={styles.featuresTitle}>✨ Features</ThemedText>
+            <ThemedText style={styles.featuresTitle}>Features</ThemedText>
             <View style={styles.featuresList}>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>🎯</Text>
+                <IconSymbol name="sparkles" size={14} color="#4f46e5" />
                 <Text style={styles.featureText}>AI-powered content</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>📊</Text>
+                <IconSymbol name="rectangle.stack.fill" size={14} color="#4f46e5" />
                 <Text style={styles.featureText}>Multiple formats</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>✏️</Text>
+                <IconSymbol name="pencil" size={14} color="#4f46e5" />
                 <Text style={styles.featureText}>Live editing</Text>
               </View>
               <View style={styles.featureItem}>
-                <Text style={styles.featureEmoji}>🦈</Text>
+                <IconSymbol name="briefcase.fill" size={14} color="#4f46e5" />
                 <Text style={styles.featureText}>Investor pitch mode</Text>
               </View>
             </View>
@@ -833,7 +856,7 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 14,
-    color: '#999',
+    color: "#476b9c",
     textAlign: 'center',
   },
   section: {
@@ -861,7 +884,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.45,
   },
   loadingRow: {
     flexDirection: 'row',
@@ -887,7 +910,6 @@ const styles = StyleSheet.create({
   contentTagline: {
     fontSize: 14,
     color: "#4f46e5",
-    fontStyle: 'italic',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -941,12 +963,38 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
-  featureEmoji: {
-    fontSize: 14,
-  },
   featureText: {
     fontSize: 13,
     color: "#4f46e5",
     fontWeight: '500',
+  },
+  inputInvalid: {
+    borderColor: '#b3261e',
+  },
+  errorBox: {
+    marginTop: 12,
+    backgroundColor: '#fdecea',
+    borderWidth: 1,
+    borderColor: '#b3261e',
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+  },
+  errorText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: "#4f46e5",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

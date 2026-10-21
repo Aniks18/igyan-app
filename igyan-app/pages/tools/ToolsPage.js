@@ -86,8 +86,6 @@ export default function ToolsPage() {
       <Header 
         title="Learning Tools" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
       />
       <ScrollView>
         {/* Tools description */}

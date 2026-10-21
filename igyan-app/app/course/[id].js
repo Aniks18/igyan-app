@@ -2,8 +2,8 @@
  * iGyan App - Course Detail Screen
  */
 
-import React, { useState, useEffect } from 'react';
-import { ScrollView, View, TouchableOpacity, StyleSheet, ActivityIndicator, Linking } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScrollView, View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
@@ -11,7 +11,7 @@ import { IconSymbol } from '../../components/IconSymbol';
 import Header from '../../components/Header';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { useSideNav } from '../../utils/SideNavContext';
-import { fetchCourseById, getGoogleDrivePreviewUrl } from '../../services/coursesService';
+import { fetchCourseById } from '../../services/coursesService';
 
 export default function CourseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -21,13 +21,8 @@ export default function CourseDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('english');
   const cardColor = useThemeColor({}, 'card');
-  const textColor = useThemeColor({}, 'text');
 
-  useEffect(() => {
-    loadCourse();
-  }, [id]);
-
-  const loadCourse = async () => {
+  const loadCourse = useCallback(async () => {
     try {
       setLoading(true);
       const courseData = await fetchCourseById(id);
@@ -37,7 +32,11 @@ export default function CourseDetailScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadCourse();
+  }, [loadCourse]);
 
   const startCourse = (lang = 'english') => {
     router.push(`/course/viewer/${id}?lang=${lang}`);
@@ -49,8 +48,6 @@ export default function CourseDetailScreen() {
         <Header 
           title="Course Details" 
           onMenuPress={openSideNav} 
-          showBack 
-          onBackPress={() => router.back()} 
         />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#4f46e5" />
@@ -66,8 +63,6 @@ export default function CourseDetailScreen() {
         <Header 
           title="Course Details" 
           onMenuPress={openSideNav} 
-          showBack 
-          onBackPress={() => router.back()} 
         />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ThemedText style={{ fontSize: 18 }}>Course not found</ThemedText>
@@ -105,8 +100,6 @@ export default function CourseDetailScreen() {
       <Header 
         title={course.title || 'Course Details'} 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
       />
       <ScrollView>
         {/* Course Header */}

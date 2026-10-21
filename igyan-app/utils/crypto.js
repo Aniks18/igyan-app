@@ -26,9 +26,11 @@ export async function hashPassword(password) {
  * Generate unique session token
  */
 export function generateToken() {
+  // Crypto.randomUUID is synchronous and backed by the platform CSPRNG —
+  // unlike Math.random, which must never be used for session tokens.
   const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 15);
-  const random2 = Math.random().toString(36).substring(2, 15);
+  const random = Crypto.randomUUID();
+  const random2 = Crypto.randomUUID();
   return `${random}-${timestamp}-${random2}`;
 }
 

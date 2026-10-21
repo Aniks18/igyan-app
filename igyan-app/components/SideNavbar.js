@@ -23,7 +23,7 @@ import { IconSymbol } from './IconSymbol';
 import { useAuth } from '../utils/AuthContext';
 import { supabase } from '../utils/supabase';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = Math.min(290, SCREEN_WIDTH * 0.8);
 
 const navItems = [
@@ -93,7 +93,7 @@ export default function SideNavbar({ isOpen, onClose }) {
     } else {
       setShowChat(false);
     }
-  }, [user?.id, user?.role]);
+  }, [user?.id, user?.role, user?.email]);
 
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -127,7 +127,7 @@ export default function SideNavbar({ isOpen, onClose }) {
         }),
       ]).start();
     }
-  }, [isOpen]);
+  }, [isOpen, fadeAnim, slideAnim]);
 
   const handleNavigation = (route) => {
     onClose();
@@ -192,7 +192,13 @@ export default function SideNavbar({ isOpen, onClose }) {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <BrandLogo variant="sidebar" />
-            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              accessibilityRole="button"
+              accessibilityLabel="Close navigation menu"
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
               <IconSymbol name="xmark" size={18} color="#94a3b8" />
             </TouchableOpacity>
           </View>
@@ -226,6 +232,8 @@ export default function SideNavbar({ isOpen, onClose }) {
               <TouchableOpacity
                 key={item.id}
                 style={styles.navItem}
+                accessibilityRole="button"
+                accessibilityLabel={item.label}
                 onPress={() => handleNavigation(item.route)}
                 activeOpacity={0.6}
               >
@@ -238,6 +246,8 @@ export default function SideNavbar({ isOpen, onClose }) {
             {showChat && (
               <TouchableOpacity
                 style={styles.navItem}
+                accessibilityRole="button"
+                accessibilityLabel="Messages"
                 onPress={() => handleNavigation('/chat')}
                 activeOpacity={0.6}
               >
@@ -249,6 +259,9 @@ export default function SideNavbar({ isOpen, onClose }) {
             {/* Expandable Manage School group */}
             <TouchableOpacity
               style={styles.navItem}
+              accessibilityRole="button"
+              accessibilityLabel={schoolExpanded ? 'Collapse Manage School' : 'Expand Manage School'}
+              accessibilityState={{ expanded: schoolExpanded }}
               onPress={() => setSchoolExpanded(prev => !prev)}
               activeOpacity={0.6}
             >
@@ -260,6 +273,8 @@ export default function SideNavbar({ isOpen, onClose }) {
               <TouchableOpacity
                 key={item.id}
                 style={[styles.navItem, styles.subNavItem]}
+                accessibilityRole="button"
+                accessibilityLabel={item.label}
                 onPress={() => handleNavigation(item.route)}
                 activeOpacity={0.6}
               >
@@ -278,6 +293,8 @@ export default function SideNavbar({ isOpen, onClose }) {
             <TouchableOpacity
               key={item.id}
               style={styles.navItem}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
               onPress={() => handleNavigation(item.route)}
               activeOpacity={0.6}
             >
@@ -289,6 +306,8 @@ export default function SideNavbar({ isOpen, onClose }) {
           {/* Logout */}
           <TouchableOpacity
             style={[styles.navItem, styles.logoutItem]}
+            accessibilityRole="button"
+            accessibilityLabel="Sign out"
             onPress={handleLogout}
             activeOpacity={0.6}
           >
@@ -344,9 +363,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#f0f5ff',
     alignItems: 'center',
     justifyContent: 'center',

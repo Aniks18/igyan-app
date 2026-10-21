@@ -7,7 +7,7 @@ import {
   View, Text, FlatList, TouchableOpacity, TextInput,
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert, StyleSheet,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -55,23 +55,35 @@ export default function ChatConversationPage() {
   const [flag, setFlag] = useState('general');
   const [showFlags, setShowFlags] = useState(false);
   const [sending, setSending] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [sendError, setSendError] = useState('');
 
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
+    if (!user?.id) {
+      setLoadError('Please sign in to view messages.');
+      setLoading(false);
+      return;
+    }
     try {
-      const msgs = await getMessages(conversationId);
+      const msgs = await getMessages(conversationId, user.id);
       setMessages((msgs || []).reverse()); // oldest first
       await markMessagesRead(conversationId, user.id, senderRole);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError(e.message || 'Could not load messages. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [conversationId, user?.id, senderRole]);
+
+  useEffect(() => { load(); }, [load]);
 
   const handleSend = async () => {
     const trimmed = text.trim();
     if (!trimmed || sending) return;
     setSending(true);
+    setSendError('');
     try {
       const msg = await sendMessage({
         conversationId,
@@ -87,7 +99,10 @@ export default function ChatConversationPage() {
       setFlag('general');
       setShowFlags(false);
       setTimeout(() => flatListRef.current?.scrollToEnd?.({ animated: true }), 150);
-    } catch (e) { Alert.alert('Error', e.message); }
+    } catch (e) {
+      console.error('Error sending message:', e);
+      setSendError(e.message || 'Message not sent. Try again.');
+    }
     finally { setSending(false); }
   };
 
@@ -96,7 +111,7 @@ export default function ChatConversationPage() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => {
         try {
-          await deleteMessage(msgId);
+          await deleteMessage(msgId, user.id);
           setMessages(prev => prev.filter(m => m.id !== msgId));
         } catch (e) { Alert.alert('Error', e.message); }
       }},
@@ -137,11 +152,14 @@ export default function ChatConversationPage() {
         style={[s.bubble, isMine ? s.bubbleMine : s.bubbleTheirs]}
         activeOpacity={0.8}
         onLongPress={isMine ? () => handleDelete(item.id) : undefined}
+        accessibilityRole={isMine ? 'button' : undefined}
+        accessibilityLabel={`${isMine ? 'Your message' : 'Their message'}: ${item.message_text}`}
+        accessibilityHint={isMine ? 'Long-press to delete' : undefined}
       >
         {item.flag && item.flag !== 'general' && flagObj && (
-          <View style={[s.flagTag, { backgroundColor: flagObj.color + '22' }]}>
-            <MaterialIcons name={flagObj.icon} size={10} color={flagObj.color} />
-            <Text style={[s.flagTagText, { color: flagObj.color }]}>{item.flag_label || item.flag}</Text>
+          <View style={[s.flagTag, { backgroundColor: isMine ? 'rgba(255,255,255,0.22)' : flagObj.color + '22' }]}>
+            <MaterialIcons name={flagObj.icon} size={10} color={isMine ? '#fff' : flagObj.color} />
+            <Text style={[s.flagTagText, { color: isMine ? '#fff' : flagObj.color }]}>{item.flag_label || item.flag}</Text>
           </View>
         )}
         <Text style={[s.msgText, isMine ? s.msgTextMine : s.msgTextTheirs]}>{item.message_text}</Text>
@@ -156,15 +174,36 @@ export default function ChatConversationPage() {
   if (loading) {
     return (
       <View style={s.root}>
-        <Header title={name || 'Chat'} onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title={name || 'Chat'} onMenuPress={openSideNav} />
         <View style={s.center}><ActivityIndicator size="large" color={C.accent} /></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={s.root}>
+        <Header title={name || 'Chat'} onMenuPress={openSideNav} />
+        <View style={s.center}>
+          <MaterialIcons name="cloud-off" size={48} color={C.dim} />
+          <Text style={{ fontSize: 15, fontWeight: '600', color: C.text, marginTop: 10 }}>Could not load messages</Text>
+          <Text style={{ fontSize: 13, color: C.muted, textAlign: 'center', marginTop: 4, paddingHorizontal: 32 }}>{loadError}</Text>
+          <TouchableOpacity
+            onPress={load}
+            style={{ marginTop: 14, backgroundColor: C.accent, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="Try loading messages again"
+          >
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Try again</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={s.root}>
-      <Header title={name || 'Chat'} onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title={name || 'Chat'} onMenuPress={openSideNav} />
 
       {/* Info bar */}
       {(studentName || className) ? (
@@ -195,7 +234,7 @@ export default function ChatConversationPage() {
             <View style={s.emptyChat}>
               <MaterialIcons name="chat-bubble-outline" size={40} color={C.dim} />
               <Text style={{ fontSize: 15, fontWeight: '600', color: C.text, marginTop: 10 }}>No messages yet</Text>
-              <Text style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Say hello! 👋</Text>
+              <Text style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Say hello to start the conversation.</Text>
             </View>
           }
         />
@@ -204,7 +243,14 @@ export default function ChatConversationPage() {
         {showFlags && (
           <View style={s.flagBar}>
             {FLAGS.map(f => (
-              <TouchableOpacity key={f.key} style={[s.flagChip, flag === f.key && { backgroundColor: f.color + '22', borderColor: f.color }]} onPress={() => { setFlag(f.key); setShowFlags(false); }}>
+              <TouchableOpacity
+                key={f.key}
+                style={[s.flagChip, flag === f.key && { backgroundColor: f.color + '22', borderColor: f.color }]}
+                onPress={() => { setFlag(f.key); setShowFlags(false); }}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: flag === f.key }}
+                accessibilityLabel={`${f.label} message tag`}
+              >
                 <MaterialIcons name={f.icon} size={14} color={flag === f.key ? f.color : C.muted} />
                 <Text style={[s.flagChipText, flag === f.key && { color: f.color }]}>{f.label}</Text>
               </TouchableOpacity>
@@ -212,21 +258,53 @@ export default function ChatConversationPage() {
           </View>
         )}
 
+        {sendError ? (
+          <View style={s.sendErrorBox}>
+            <Text accessibilityLiveRegion="polite" style={s.sendErrorText}>{sendError}</Text>
+            <TouchableOpacity
+              style={s.sendRetryBtn}
+              onPress={handleSend}
+              disabled={sending || !text.trim()}
+              accessibilityRole="button"
+              accessibilityLabel="Try sending the message again"
+            >
+              <Text style={s.sendRetryText}>Try again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
         {/* Input bar — always pinned at bottom */}
         <View style={s.inputBar}>
-          <TouchableOpacity style={[s.flagBtn, { borderColor: currentFlag.color + '44' }]} onPress={() => setShowFlags(v => !v)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity
+            style={[s.flagBtn, { borderColor: currentFlag.color + '44' }]}
+            onPress={() => setShowFlags(v => !v)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={`Message tag: ${currentFlag.label}. Activate to change.`}
+            accessibilityState={{ expanded: showFlags }}
+          >
             <MaterialIcons name={currentFlag.icon} size={18} color={currentFlag.color} />
           </TouchableOpacity>
           <TextInput
             style={s.input}
             value={text}
-            onChangeText={setText}
+            onChangeText={value => { setText(value); if (sendError) setSendError(''); }}
             placeholder="Type a message…"
             placeholderTextColor={C.dim}
             multiline
             maxLength={2000}
+            accessibilityLabel="Type a message"
+            returnKeyType="send"
+            onSubmitEditing={handleSend}
           />
-          <TouchableOpacity style={[s.sendBtn, !text.trim() && { opacity: 0.4 }]} onPress={handleSend} disabled={!text.trim() || sending}>
+          <TouchableOpacity
+            style={[s.sendBtn, !text.trim() && { opacity: 0.4 }]}
+            onPress={handleSend}
+            disabled={!text.trim() || sending}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            accessibilityState={{ disabled: !text.trim() || sending, busy: sending }}
+          >
             {sending ? <ActivityIndicator size="small" color="#fff" /> : <MaterialIcons name="send" size={18} color="#fff" />}
           </TouchableOpacity>
         </View>
@@ -258,7 +336,7 @@ const s = StyleSheet.create({
   bubbleMine: { alignSelf: 'flex-end', backgroundColor: C.accent, borderBottomRightRadius: 4 },
   bubbleTheirs: { alignSelf: 'flex-start', backgroundColor: C.surface, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: C.border },
   msgText: { fontSize: 14, lineHeight: 20 },
-  msgTextMine: { color: "#12305c" },
+  msgTextMine: { color: '#fff' },
   msgTextTheirs: { color: C.text },
   msgMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 4 },
   msgTime: { fontSize: 10, color: 'rgba(255,255,255,0.5)' },
@@ -269,8 +347,14 @@ const s = StyleSheet.create({
 
   // Flag bar
   flagBar: { flexDirection: 'row', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.border, backgroundColor: C.surface },
-  flagChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, borderWidth: 1, borderColor: C.border },
+  flagChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, minHeight: 44, borderRadius: 6, borderWidth: 1, borderColor: C.border },
   flagChipText: { fontSize: 12, fontWeight: '500', color: C.muted },
+
+  // Send error
+  sendErrorBox: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginTop: 8, backgroundColor: '#fdecea', borderWidth: 1, borderColor: '#b3261e', borderRadius: 10, padding: 10 },
+  sendErrorText: { flex: 1, fontSize: 13, lineHeight: 18, color: C.text },
+  sendRetryBtn: { backgroundColor: C.accent, borderRadius: 8, paddingHorizontal: 14, minHeight: 40, justifyContent: 'center' },
+  sendRetryText: { color: '#fff', fontSize: 13, fontWeight: '600' },
 
   // Input bar
   inputBar: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 10, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.border, backgroundColor: C.surface },

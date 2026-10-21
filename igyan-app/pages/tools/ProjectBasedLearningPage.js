@@ -5,7 +5,6 @@
 
 import React, { useState, useRef } from 'react';
 import { ScrollView, View, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking } from 'react-native';
-import { useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -19,7 +18,6 @@ const SKILL_LEVELS = ['beginner', 'intermediate', 'advanced'];
 const DURATION_OPTIONS = ['1-2 weeks', '2-4 weeks', '1-2 months', '2+ months'];
 
 export default function ProjectBasedLearningPage() {
-  const router = useRouter();
   const scrollViewRef = useRef(null);
   const { openSideNav } = useSideNav();
   const [formData, setFormData] = useState({
@@ -159,8 +157,6 @@ Return ONLY valid JSON.`;
       <Header 
         title="Project-Based Learning" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
         rightComponent={
           projects ? (
             <TouchableOpacity
@@ -403,7 +399,7 @@ Return ONLY valid JSON.`;
                 borderColor: '#8B5CF6' + '40',
               }}>
                 <ThemedText style={{ fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
-                  🎯 Skills You'll Develop
+                  {"🎯 Skills You'll Develop"}
                 </ThemedText>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {projects.skillsToLearn.map((skill, idx) => (
@@ -491,7 +487,7 @@ Return ONLY valid JSON.`;
                   {project.learningOutcomes?.length > 0 && (
                     <View style={{ marginBottom: 16 }}>
                       <ThemedText style={{ fontSize: 15, fontWeight: '700', marginBottom: 8 }}>
-                        ✓ What You'll Learn
+                        {"✓ What You'll Learn"}
                       </ThemedText>
                       {project.learningOutcomes.map((outcome, i) => (
                         <ThemedText key={i} style={{ fontSize: 13, color: '#999', marginBottom: 4 }}>

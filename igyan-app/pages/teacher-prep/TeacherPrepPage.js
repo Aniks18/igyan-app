@@ -11,7 +11,6 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { IconSymbol } from '../../components';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -518,7 +517,6 @@ const QuizResults = ({ quiz, userAnswers, score, onRestartQuiz, onReviewAnswers 
 
 // Main Teacher Prep Page
 export default function TeacherPrepPage() {
-  const router = useRouter();
   
   const [formData, setFormData] = useState({
     topic: '',
@@ -689,11 +687,7 @@ Provide ONLY valid JSON, no additional commentary.`;
     <View style={styles.container}>
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity style={styles.menuButton} onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={styles.topBarTitle}>Teacher Prep</Text>
-        <View style={styles.backButton} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -808,7 +802,7 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingBottom: 16,
@@ -816,16 +810,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  menuButton: {
-    padding: 8,
-  },
   topBarTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-  },
-  backButton: {
-    padding: 8,
   },
   content: {
     flex: 1,

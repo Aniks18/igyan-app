@@ -4,7 +4,6 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -44,35 +43,67 @@ export default function ManageUsersPage() {
   const [filter, setFilter] = useState('all');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ role: 'student' });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [adding, setAdding] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => { boot(); }, []);
+  const reload = useCallback(async () => {
+    setUsers(await getSchoolUsers(user.school_id));
+  }, [user?.school_id]);
 
-  const boot = async () => {
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
-      setUsers(await getSchoolUsers(user.school_id));
-    } catch (e) { console.error(e); }
+      await reload();
+    } catch (e) {
+      console.error(e);
+      setLoadError('Could not load users. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [user?.school_id, reload]);
 
-  const reload = async () => setUsers(await getSchoolUsers(user.school_id));
-  const onRefresh = useCallback(async () => { setRefreshing(true); await reload(); setRefreshing(false); }, []);
+  useEffect(() => { boot(); }, [boot]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reload();
+    } catch (e) {
+      console.error(e);
+    } finally { setRefreshing(false); }
+  }, [reload]);
 
   const filtered = filter === 'all' ? users : users.filter(u => u.role === filter);
   const studentCount = users.filter(u => u.role === 'student').length;
   const facultyCount = users.filter(u => u.role === 'faculty').length;
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const handleAdd = async () => {
+    if (adding) return;
     const { fullName, email, password, phone, role } = form;
-    if (!fullName?.trim() || !email?.trim() || !password?.trim()) return Alert.alert('Required', 'Please fill in name, email and password');
+    const errors = {};
+    if (!fullName?.trim()) errors.fullName = 'Enter the full name.';
+    if (!EMAIL_RE.test((email || '').trim())) errors.email = 'Enter a valid email address.';
+    if ((password || '').length < 6) errors.password = 'Password must be at least 6 characters.';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setAdding(true);
     try {
       const passwordHash = await hashPassword(password.trim());
       await addUser({ schoolId: user.school_id, fullName: fullName.trim(), email: email.trim().toLowerCase(), passwordHash, role: role || 'student', phone: phone?.trim() });
-      setShowAdd(false); setForm({ role: 'student' });
+      setShowAdd(false); setForm({ role: 'student' }); setFieldErrors({});
       Alert.alert('Success', `${ROLE_LABELS[role] || 'User'} added successfully`);
       await reload();
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setAdding(false); }
+  };
+
+  const updateForm = (patch) => {
+    setForm(p => ({ ...p, ...patch }));
+    setFieldErrors({});
   };
 
   const handleDelete = (id, name) => {
@@ -86,7 +117,7 @@ export default function ManageUsersPage() {
   if (!isAdmin) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Users" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Users" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="lock" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>Access Restricted</Text>
@@ -99,15 +130,26 @@ export default function ManageUsersPage() {
   if (loading) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Users" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Users" onMenuPress={openSideNav} />
         <View style={ms.center}><ActivityIndicator size="large" color={C.accent} /><Text style={ms.mutedText}>Loading users…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={ms.root}>
+        <Header title="Manage Users" onMenuPress={openSideNav} />
+        <View style={ms.scrollInner}>
+          <EmptyState icon="cloud-off" title="Could not load users" text={loadError} onAction={boot} actionLabel="Try again" />
+        </View>
       </View>
     );
   }
 
   return (
     <View style={ms.root}>
-      <Header title="Manage Users" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Manage Users" onMenuPress={openSideNav} />
 
       {/* Stats */}
       <StatRow stats={[
@@ -122,7 +164,15 @@ export default function ManageUsersPage() {
           const active = filter === t.key;
           const count = t.key === 'all' ? users.length : users.filter(u => u.role === t.key).length;
           return (
-            <TouchableOpacity key={t.key} style={[ls.tab, active && ls.tabActive]} onPress={() => setFilter(t.key)} activeOpacity={0.7}>
+            <TouchableOpacity
+              key={t.key}
+              style={[ls.tab, active && ls.tabActive]}
+              onPress={() => setFilter(t.key)}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={`Filter by ${t.label}, ${count} users`}
+            >
               <Text style={[ls.tabText, active && ls.tabTextActive]}>{t.label}</Text>
               <Text style={[ls.tabCount, active && ls.tabCountActive]}>{count}</Text>
             </TouchableOpacity>
@@ -143,17 +193,17 @@ export default function ManageUsersPage() {
       </ScrollView>
 
       {/* Add user modal */}
-      <FormModal visible={showAdd} title="Add New User" subtitle="Create a user account for your school" onClose={() => setShowAdd(false)} onSubmit={handleAdd} submitLabel="Create User">
-        <Input label="Full Name" placeholder="Enter full name" value={form.fullName} onChangeText={v => setForm(p => ({ ...p, fullName: v }))} icon="person" />
-        <Input label="Email Address" placeholder="user@example.com" value={form.email} onChangeText={v => setForm(p => ({ ...p, email: v }))} keyboardType="email-address" icon="email" />
-        <Input label="Password" placeholder="Create a password" value={form.password} onChangeText={v => setForm(p => ({ ...p, password: v }))} secureTextEntry icon="lock" />
-        <Input label="Phone (optional)" placeholder="Phone number" value={form.phone} onChangeText={v => setForm(p => ({ ...p, phone: v }))} keyboardType="phone-pad" icon="phone" />
+      <FormModal visible={showAdd} title="Add New User" subtitle="Create a user account for your school" onClose={() => { setShowAdd(false); setFieldErrors({}); }} onSubmit={handleAdd} submitLabel="Create User" busy={adding}>
+        <Input label="Full Name" placeholder="Enter full name" value={form.fullName} onChangeText={v => updateForm({ fullName: v })} icon="person" error={fieldErrors.fullName} autoCapitalize="words" textContentType="name" editable={!adding} />
+        <Input label="Email Address" placeholder="user@example.com" value={form.email} onChangeText={v => updateForm({ email: v })} keyboardType="email-address" icon="email" error={fieldErrors.email} autoCapitalize="none" textContentType="emailAddress" editable={!adding} />
+        <Input label="Password" placeholder="Create a password" value={form.password} onChangeText={v => updateForm({ password: v })} secureTextEntry icon="lock" error={fieldErrors.password} autoCapitalize="none" textContentType="newPassword" editable={!adding} />
+        <Input label="Phone (optional)" placeholder="Phone number" value={form.phone} onChangeText={v => updateForm({ phone: v })} keyboardType="phone-pad" icon="phone" autoCapitalize="none" textContentType="telephoneNumber" editable={!adding} />
         <Text style={{ fontSize: 12, fontWeight: '600', color: C.muted, marginTop: 8, marginBottom: 6, marginLeft: 2 }}>Select Role</Text>
         <View style={ls.roleGrid}>
           {ROLE_OPTIONS.map(r => {
             const active = form.role === r.key;
             return (
-              <TouchableOpacity key={r.key} style={[ls.roleCard, active && { borderColor: r.color, backgroundColor: r.color + '12' }]} onPress={() => setForm(p => ({ ...p, role: r.key }))} activeOpacity={0.7}>
+              <TouchableOpacity key={r.key} style={[ls.roleCard, active && { borderColor: r.color, backgroundColor: r.color + '12' }]} onPress={() => updateForm({ role: r.key })} activeOpacity={0.7} accessibilityRole="radio" accessibilityState={{ checked: active }} accessibilityLabel={`${r.label} role`} disabled={adding}>
                 <MaterialIcons name={r.icon} size={20} color={active ? r.color : C.dim} />
                 <Text style={[ls.roleLabel, active && { color: r.color }]}>{r.label}</Text>
                 {active && <MaterialIcons name="check-circle" size={16} color={r.color} style={{ position: 'absolute', top: 6, right: 6 }} />}
@@ -167,7 +217,7 @@ export default function ManageUsersPage() {
 }
 
 const ls = StyleSheet.create({
-  tab: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, backgroundColor: 'transparent' },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, minHeight: 44, borderRadius: 6, backgroundColor: 'transparent' },
   tabActive: { backgroundColor: C.accent },
   tabText: { fontSize: 13, fontWeight: '500', color: C.muted },
   tabTextActive: { color: '#fff', fontWeight: '600' },

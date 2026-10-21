@@ -17,7 +17,6 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Speech from 'expo-speech';
 import { ThemedView } from '../../components/ThemedView';
@@ -431,8 +430,6 @@ Respond in this JSON format:
       <Header 
         title="Shark AI" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
       />
 
       {/* Language Toggle */}

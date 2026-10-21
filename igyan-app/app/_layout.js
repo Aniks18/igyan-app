@@ -16,16 +16,16 @@ import { AuthProvider } from '../utils/AuthContext';
 import { SideNavProvider, useSideNav } from '../utils/SideNavContext';
 import SideNavbar from '../components/SideNavbar';
 
-// Custom theme for iGyan
+// Custom theme for iGyan — aligned with DESIGN.md / githubUI tokens.
 const iGyanLightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
     primary: "#4f46e5",
-    background: '#f8fafc',
+    background: '#f5f8ff',
     card: '#FFFFFF',
-    text: '#0a2434',
-    border: '#135167',
+    text: '#0f2444',
+    border: '#d9e3f3',
   },
 };
 
@@ -34,10 +34,10 @@ const iGyanDarkTheme = {
   colors: {
     ...DarkTheme.colors,
     primary: "#4f46e5",
-    background: '#0a2434',
-    card: '#135167',
+    background: '#0f172a',
+    card: '#1e293b',
     text: '#f8fafc',
-    border: '#135167',
+    border: '#334155',
   },
 };
 
@@ -53,14 +53,16 @@ function RootLayoutContent() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? iGyanDarkTheme : iGyanLightTheme}>
       <View style={styles.container}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, presentation: 'card', gestureEnabled: true }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="auth-options" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ presentation: 'modal', headerShown: false }} />
-          <Stack.Screen name="signup" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="login" options={{ presentation: 'card', headerShown: false }} />
+          <Stack.Screen name="signup" options={{ presentation: 'card', headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="course/[id]" options={{ title: 'Course Details', headerShown: false }} />
+          <Stack.Screen name="course/viewer/[id]" options={{ title: 'Course Viewer', headerShown: false }} />
+          <Stack.Screen name="copilot" options={{ title: 'AI Copilot', headerShown: false }} />
           <Stack.Screen name="lesson/[id]" options={{ title: 'Lesson', headerShown: false }} />
           <Stack.Screen name="settings" options={{ title: 'Settings', headerShown: false }} />
           <Stack.Screen name="live-classroom" options={{ title: 'Live Classroom', headerShown: false }} />
@@ -89,7 +91,7 @@ function RootLayoutContent() {
           <Stack.Screen name="chat-conversation" options={{ title: 'Chat', headerShown: false }} />
         </Stack>
         <SideNavbar isOpen={isOpen} onClose={closeSideNav} />
-        <StatusBar style="dark" />
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </View>
     </ThemeProvider>
   );

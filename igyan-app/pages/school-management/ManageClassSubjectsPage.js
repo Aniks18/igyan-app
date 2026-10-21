@@ -4,7 +4,6 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -28,12 +27,15 @@ export default function ManageClassSubjectsPage() {
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [classSubjects, setClassSubjects] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => { boot(); }, []);
-  useEffect(() => { if (selectedClassId) loadData(); }, [selectedClassId]);
+  const loadData = useCallback(async () => {
+    if (selectedClassId) setClassSubjects(await getClassSubjects(selectedClassId));
+  }, [selectedClassId]);
 
-  const boot = async () => {
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
@@ -43,12 +45,24 @@ export default function ManageClassSubjectsPage() {
       setClasses(cls);
       setSubjects(subs);
       if (cls.length > 0) setSelectedClassId(cls[0].id);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError('Could not load data. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [user?.school_id]);
 
-  const loadData = async () => { if (selectedClassId) setClassSubjects(await getClassSubjects(selectedClassId)); };
-  const onRefresh = useCallback(async () => { setRefreshing(true); await loadData(); setRefreshing(false); }, [selectedClassId]);
+  useEffect(() => { boot(); }, [boot]);
+  useEffect(() => { if (selectedClassId) loadData(); }, [selectedClassId, loadData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadData();
+    } catch (e) {
+      console.error(e);
+    } finally { setRefreshing(false); }
+  }, [loadData]);
 
   const handleAssign = async (subject) => {
     if (!selectedClassId) return;
@@ -74,7 +88,7 @@ export default function ManageClassSubjectsPage() {
   if (!isAdmin) {
     return (
       <View style={ms.root}>
-        <Header title="Assign Subjects" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Assign Subjects" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="lock" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>Access Restricted</Text>
@@ -87,8 +101,19 @@ export default function ManageClassSubjectsPage() {
   if (loading) {
     return (
       <View style={ms.root}>
-        <Header title="Assign Subjects" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Assign Subjects" onMenuPress={openSideNav} />
         <View style={ms.center}><ActivityIndicator size="large" color={C.accent} /><Text style={ms.mutedText}>Loading data…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={ms.root}>
+        <Header title="Assign Subjects" onMenuPress={openSideNav} />
+        <View style={ms.scrollInner}>
+          <EmptyState icon="cloud-off" title="Could not load data" text={loadError} onAction={boot} actionLabel="Try again" />
+        </View>
       </View>
     );
   }
@@ -96,7 +121,7 @@ export default function ManageClassSubjectsPage() {
   if (!session) {
     return (
       <View style={ms.root}>
-        <Header title="Assign Subjects" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Assign Subjects" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="event-busy" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>No Active Session</Text>
@@ -108,7 +133,7 @@ export default function ManageClassSubjectsPage() {
 
   return (
     <View style={ms.root}>
-      <Header title="Assign Subjects" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Assign Subjects" onMenuPress={openSideNav} />
       <SessionBanner session={session} />
 
       <ScrollView style={ms.scroll} contentContainerStyle={ms.scrollInner} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.accent} />}>

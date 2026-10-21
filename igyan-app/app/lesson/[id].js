@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -12,7 +12,6 @@ import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
 
 export default function LessonScreen() {
-  const { id } = useLocalSearchParams();
   const { openSideNav } = useSideNav();
 
   return (
@@ -20,8 +19,6 @@ export default function LessonScreen() {
       <Header 
         title="Lesson" 
         onMenuPress={openSideNav} 
-        showBack 
-        onBackPress={() => router.back()} 
       />
       {/* Video Player Placeholder */}
       <View style={styles.videoPlayer}>
@@ -34,17 +31,27 @@ export default function LessonScreen() {
       <View style={styles.content}>
         <ThemedText style={styles.lessonTitle}>Introduction to React Native</ThemedText>
         <ThemedText style={styles.lessonDescription}>
-          In this lesson, you'll learn the fundamentals of React Native and how it differs from 
+          In this lesson, you&apos;ll learn the fundamentals of React Native and how it differs from 
           traditional mobile development approaches.
         </ThemedText>
 
         {/* Navigation Buttons */}
         <View style={styles.navButtons}>
-          <TouchableOpacity style={styles.navButton}>
+          <TouchableOpacity
+            style={styles.navButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back to previous screen"
+            onPress={() => router.back()}
+          >
             <IconSymbol name="chevron.left.forwardslash.chevron.right" size={20} color="#4f46e5" />
             <ThemedText style={styles.navButtonText}>Previous</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.navButton, styles.nextButton]}>
+          <TouchableOpacity
+            style={[styles.navButton, styles.nextButton]}
+            accessibilityRole="button"
+            accessibilityLabel="Back to courses list"
+            onPress={() => router.replace('/(tabs)/courses')}
+          >
             <ThemedText style={styles.nextButtonText}>Next Lesson</ThemedText>
             <IconSymbol name="chevron.right" size={20} color="#FFFFFF" />
           </TouchableOpacity>

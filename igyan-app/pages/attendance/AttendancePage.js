@@ -16,7 +16,6 @@ import {
   Dimensions,
   RefreshControl,
 } from 'react-native';
-import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -34,6 +33,7 @@ export default function AttendancePage() {
   const cardColor = useThemeColor({}, 'card');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
+  const mutedColor = useThemeColor({}, 'icon');
 
   // State
   const [students, setStudents] = useState([]);
@@ -47,6 +47,7 @@ export default function AttendancePage() {
   const [view, setView] = useState('mark'); // 'mark' or 'history'
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   // Demo data for testing (remove when Supabase is connected)
   const demoStudents = [
@@ -150,10 +151,12 @@ export default function AttendancePage() {
 
   // Save attendance
   const handleSaveAttendance = async () => {
+    if (isLoading) return;
     if (!selectedClass || !selectedSection) {
-      Alert.alert('Error', 'Please select class and section');
+      setSaveError('Select a class and section before saving attendance.');
       return;
     }
+    setSaveError('');
 
     setIsLoading(true);
 
@@ -171,13 +174,11 @@ export default function AttendancePage() {
 
       setAttendance((prev) => [newRecord, ...prev]);
       setShowStats(true);
-      
-      Alert.alert('Success! 🎉', 'Attendance saved successfully!');
-      
+
       setTimeout(() => setShowStats(false), 3000);
     } catch (error) {
       console.error('Error saving attendance:', error);
-      Alert.alert('Error', 'Failed to save attendance');
+      setSaveError('Could not save attendance. Try again.');
     } finally {
       setIsLoading(false);
     }
@@ -188,8 +189,8 @@ export default function AttendancePage() {
     const student = students.find((s) => s.id === studentId);
     if (student) {
       Alert.alert(
-        '📧 Reminder Sent',
-        `Notification sent to parents of ${student.name}\n\nEmail: ${student.email}\n\nMessage: Your child has been absent for multiple consecutive days.`
+        'Reminder sent',
+        `Notification sent to parents of ${student.name}.\n\nMessage: Your child has been absent for multiple consecutive days.`
       );
     }
   };
@@ -247,8 +248,6 @@ export default function AttendancePage() {
       <Header
         title="Attendance"
         onMenuPress={openSideNav}
-        showBack
-        onBackPress={() => router.back()}
       />
 
       <ScrollView
@@ -302,6 +301,8 @@ export default function AttendancePage() {
                 <TouchableOpacity
                   style={styles.alertButton}
                   onPress={() => sendReminderToParents(alert.student.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Send absence reminder to parents of ${alert.student.name}`}
                 >
                   <IconSymbol name="bell.fill" size={16} color="#fff" />
                   <Text style={styles.alertButtonText}>Alert</Text>
@@ -316,17 +317,23 @@ export default function AttendancePage() {
           <TouchableOpacity
             style={[styles.tab, view === 'mark' && styles.tabActive]}
             onPress={() => setView('mark')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: view === 'mark' }}
+            accessibilityLabel="Mark attendance tab"
           >
             <Text style={[styles.tabText, view === 'mark' && styles.tabTextActive]}>
-              📝 Mark Attendance
+              Mark Attendance
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, view === 'history' && styles.tabActive]}
             onPress={() => setView('history')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: view === 'history' }}
+            accessibilityLabel="Attendance history tab"
           >
             <Text style={[styles.tabText, view === 'history' && styles.tabTextActive]}>
-              📊 History
+              History
             </Text>
           </TouchableOpacity>
         </View>
@@ -364,6 +371,9 @@ export default function AttendancePage() {
                       setSelectedClass(cls);
                       setSelectedSection('');
                     }}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selectedClass === cls }}
+                    accessibilityLabel={`Class ${cls}`}
                   >
                     <Text
                       style={[
@@ -390,6 +400,9 @@ export default function AttendancePage() {
                           selectedSection === sec && styles.selectorChipActive,
                         ]}
                         onPress={() => setSelectedSection(sec)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selectedSection === sec }}
+                        accessibilityLabel={`Section ${sec}`}
                       >
                         <Text
                           style={[
@@ -442,7 +455,12 @@ export default function AttendancePage() {
                   <ThemedText style={styles.studentListTitle}>
                     Class {selectedClass}-{selectedSection}
                   </ThemedText>
-                  <TouchableOpacity style={styles.markAllButton} onPress={markAllPresent}>
+                  <TouchableOpacity
+                    style={styles.markAllButton}
+                    onPress={markAllPresent}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark all students present"
+                  >
                     <Text style={styles.markAllButtonText}>✓ All Present</Text>
                   </TouchableOpacity>
                 </View>
@@ -485,6 +503,9 @@ export default function AttendancePage() {
                         <TouchableOpacity
                           style={styles.toggleButton}
                           onPress={() => toggleAttendance(student.id)}
+                          accessibilityRole="switch"
+                          accessibilityState={{ checked: isPresent }}
+                          accessibilityLabel={`${student.name}, currently ${isPresent ? 'present' : 'absent'}. Activate to mark ${isPresent ? 'absent' : 'present'}.`}
                         >
                           <Text style={styles.toggleButtonText}>Toggle</Text>
                         </TouchableOpacity>
@@ -493,11 +514,20 @@ export default function AttendancePage() {
                   );
                 })}
 
+                {saveError ? (
+                  <View style={styles.errorBox}>
+                    <Text accessibilityLiveRegion="polite" style={styles.errorText}>{saveError}</Text>
+                  </View>
+                ) : null}
+
                 {/* Save Button */}
                 <TouchableOpacity
                   style={styles.saveButton}
                   onPress={handleSaveAttendance}
                   disabled={isLoading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save attendance"
+                  accessibilityState={{ disabled: isLoading, busy: isLoading }}
                 >
                   {isLoading ? (
                     <ActivityIndicator color="#fff" size="small" />
@@ -511,7 +541,7 @@ export default function AttendancePage() {
               </View>
             ) : (
               <View style={[styles.emptyState, { backgroundColor: cardColor }]}>
-                <IconSymbol name="doc.text.magnifyingglass" size={64} color="#666" />
+                <IconSymbol name="doc.text.magnifyingglass" size={64} color={mutedColor} />
                 <ThemedText style={styles.emptyStateTitle}>Select Class Details</ThemedText>
                 <ThemedText style={styles.emptyStateSubtitle}>
                   Choose class and section to mark attendance
@@ -571,7 +601,7 @@ export default function AttendancePage() {
             {/* History List */}
             {attendanceHistory.length === 0 ? (
               <View style={[styles.emptyState, { backgroundColor: cardColor }]}>
-                <IconSymbol name="clock.arrow.circlepath" size={64} color="#666" />
+                <IconSymbol name="clock.arrow.circlepath" size={64} color={mutedColor} />
                 <ThemedText style={styles.emptyStateTitle}>No Records Yet</ThemedText>
                 <ThemedText style={styles.emptyStateSubtitle}>
                   Start marking attendance to see history
@@ -589,7 +619,7 @@ export default function AttendancePage() {
                   <View key={record.id} style={[styles.historyCard, { backgroundColor: cardColor }]}>
                     <View style={styles.historyHeader}>
                       <View style={styles.historyDate}>
-                        <Text style={styles.historyDateIcon}>📅</Text>
+                        <IconSymbol name="calendar" size={20} color="#4f46e5" />
                         <View>
                           <Text style={styles.historyTitle}>
                             Class {record.class}-{record.section}
@@ -907,6 +937,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#10b981',
+  },
+  errorBox: {
+    backgroundColor: '#fdecea',
+    borderWidth: 1,
+    borderColor: '#b3261e',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#12305c',
   },
 
   // Student List Styles

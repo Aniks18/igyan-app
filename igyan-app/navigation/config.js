@@ -42,10 +42,6 @@ export const NavigationConfig = {
       name: 'settings',
       title: 'Settings',
     },
-    notifications: {
-      name: 'notifications',
-      title: 'Notifications',
-    },
   },
 
   // Modal Screens
@@ -69,7 +65,6 @@ export const Routes = {
   COURSE_DETAIL: '/course/[id]',
   LESSON: '/lesson/[id]',
   SETTINGS: '/settings',
-  NOTIFICATIONS: '/notifications',
   LOGIN: '/login',
   SIGNUP: '/signup',
 };

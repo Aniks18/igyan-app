@@ -1,7 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
-
-const { width, height } = Dimensions.get('window');
-const isSmallScreen = width < 768;
+import { StyleSheet } from 'react-native';
 
 export const copilotStyles = StyleSheet.create({
   container: {
@@ -62,15 +59,6 @@ export const copilotStyles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
   },
-  chatDate: {
-    fontSize: 11,
-    opacity: 0.5,
-  },
-  deleteButton: {
-    padding: 6,
-    borderRadius: 8,
-  },
-  
   // Memory Styles
   memoryItem: {
     padding: 14,

@@ -4,7 +4,6 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert, StyleSheet, Modal, FlatList } from 'react-native';
-import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -36,11 +35,19 @@ export default function ManageFacultyPage() {
   const [showAssignWizard, setShowAssignWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [form, setForm] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [adding, setAdding] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => { boot(); }, []);
+  const reloadAll = useCallback(async () => {
+    if (!session) return;
+    const [fac, fa] = await Promise.all([getSchoolFaculty(user.school_id), getFacultyAssignments(user.school_id, session.id)]);
+    setFaculty(fac); setAssignments(fa);
+  }, [user?.school_id, session]);
 
-  const boot = async () => {
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
@@ -51,27 +58,47 @@ export default function ManageFacultyPage() {
         getSchoolFaculty(user.school_id), getFacultyAssignments(user.school_id, sess.id),
       ]);
       setClasses(cls); setSubjects(subs); setFaculty(fac); setAssignments(fa);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError('Could not load faculty. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [user?.school_id]);
 
-  const reloadAll = async () => {
-    if (!session) return;
-    const [fac, fa] = await Promise.all([getSchoolFaculty(user.school_id), getFacultyAssignments(user.school_id, session.id)]);
-    setFaculty(fac); setAssignments(fa);
+  useEffect(() => { boot(); }, [boot]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reloadAll();
+    } catch (e) {
+      console.error(e);
+    } finally { setRefreshing(false); }
+  }, [reloadAll]);
+
+  const updateForm = (patch) => {
+    setForm(p => ({ ...p, ...patch }));
+    setFieldErrors({});
   };
-  const onRefresh = useCallback(async () => { setRefreshing(true); await reloadAll(); setRefreshing(false); }, [session]);
 
   const handleAddFaculty = async () => {
+    if (adding) return;
     const { fullName, email, password, phone } = form;
-    if (!fullName?.trim() || !email?.trim() || !password?.trim()) return Alert.alert('Required', 'Please fill name, email and password');
+    const errors = {};
+    if (!fullName?.trim()) errors.fullName = 'Enter the full name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || '').trim())) errors.email = 'Enter a valid email address.';
+    if ((password || '').length < 6) errors.password = 'Password must be at least 6 characters.';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setAdding(true);
     try {
       const passwordHash = await hashPassword(password.trim());
       await addUser({ schoolId: user.school_id, fullName: fullName.trim(), email: email.trim().toLowerCase(), passwordHash, role: 'faculty', phone: phone?.trim() });
-      setShowAddUser(false); setForm({});
+      setShowAddUser(false); setForm({}); setFieldErrors({});
       Alert.alert('Success', 'Faculty account created successfully');
       await reloadAll();
     } catch (e) { Alert.alert('Error', e.message); }
+    finally { setAdding(false); }
   };
 
   const handleAssign = async () => {
@@ -103,7 +130,7 @@ export default function ManageFacultyPage() {
   if (!isAdmin) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Faculty" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Faculty" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="lock" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>Access Restricted</Text>
@@ -116,8 +143,19 @@ export default function ManageFacultyPage() {
   if (loading) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Faculty" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Faculty" onMenuPress={openSideNav} />
         <View style={ms.center}><ActivityIndicator size="large" color={C.accent} /><Text style={ms.mutedText}>Loading faculty…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={ms.root}>
+        <Header title="Manage Faculty" onMenuPress={openSideNav} />
+        <View style={ms.scrollInner}>
+          <EmptyState icon="cloud-off" title="Could not load faculty" text={loadError} onAction={boot} actionLabel="Try again" />
+        </View>
       </View>
     );
   }
@@ -125,7 +163,7 @@ export default function ManageFacultyPage() {
   if (!session) {
     return (
       <View style={ms.root}>
-        <Header title="Manage Faculty" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Faculty" onMenuPress={openSideNav} />
         <View style={ms.center}>
           <MaterialIcons name="event-busy" size={48} color={C.dim} />
           <Text style={{ fontSize: 16, fontWeight: '600', color: C.text, marginTop: 8 }}>No Active Session</Text>
@@ -137,7 +175,7 @@ export default function ManageFacultyPage() {
 
   return (
     <View style={ms.root}>
-      <Header title="Manage Faculty" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Manage Faculty" onMenuPress={openSideNav} />
       <SessionBanner session={session} />
 
       <TabBar
@@ -197,11 +235,11 @@ export default function ManageFacultyPage() {
       </ScrollView>
 
       {/* Add new faculty user */}
-      <FormModal visible={showAddUser} title="Add New Faculty" subtitle="Create a faculty account" onClose={() => setShowAddUser(false)} onSubmit={handleAddFaculty} submitLabel="Create Faculty">
-        <Input label="Full Name" placeholder="Faculty member's name" value={form.fullName} onChangeText={v => setForm(p => ({ ...p, fullName: v }))} icon="person" />
-        <Input label="Email Address" placeholder="faculty@example.com" value={form.email} onChangeText={v => setForm(p => ({ ...p, email: v }))} keyboardType="email-address" icon="email" />
-        <Input label="Password" placeholder="Create a password" value={form.password} onChangeText={v => setForm(p => ({ ...p, password: v }))} secureTextEntry icon="lock" />
-        <Input label="Phone (optional)" placeholder="Phone number" value={form.phone} onChangeText={v => setForm(p => ({ ...p, phone: v }))} keyboardType="phone-pad" icon="phone" />
+      <FormModal visible={showAddUser} title="Add New Faculty" subtitle="Create a faculty account" onClose={() => { setShowAddUser(false); setFieldErrors({}); }} onSubmit={handleAddFaculty} submitLabel="Create Faculty" busy={adding}>
+        <Input label="Full Name" placeholder="Faculty member's name" value={form.fullName} onChangeText={v => updateForm({ fullName: v })} icon="person" error={fieldErrors.fullName} autoCapitalize="words" textContentType="name" editable={!adding} />
+        <Input label="Email Address" placeholder="faculty@example.com" value={form.email} onChangeText={v => updateForm({ email: v })} keyboardType="email-address" icon="email" error={fieldErrors.email} autoCapitalize="none" textContentType="emailAddress" editable={!adding} />
+        <Input label="Password" placeholder="Create a password" value={form.password} onChangeText={v => updateForm({ password: v })} secureTextEntry icon="lock" error={fieldErrors.password} autoCapitalize="none" textContentType="newPassword" editable={!adding} />
+        <Input label="Phone (optional)" placeholder="Phone number" value={form.phone} onChangeText={v => updateForm({ phone: v })} keyboardType="phone-pad" icon="phone" autoCapitalize="none" textContentType="telephoneNumber" editable={!adding} />
       </FormModal>
 
       {/* 4-Step Assignment Wizard */}
@@ -214,7 +252,7 @@ export default function ManageFacultyPage() {
                 <Text style={{ fontSize: 17, fontWeight: '700', color: C.text }}>Assign Faculty</Text>
                 <Text style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>Step {wizardStep} of 4 — {STEP_LABELS[wizardStep - 1]}</Text>
               </View>
-              <TouchableOpacity onPress={closeWizard} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity onPress={closeWizard} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityRole="button" accessibilityLabel="Close assignment wizard">
                 <MaterialIcons name="close" size={22} color={C.muted} />
               </TouchableOpacity>
             </View>
@@ -235,7 +273,7 @@ export default function ManageFacultyPage() {
                 contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
                 ListEmptyComponent={<Text style={{ color: C.muted, textAlign: 'center', padding: 20 }}>No faculty available</Text>}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={wz.row} onPress={() => { setForm(p => ({ ...p, facultyId: item.id })); setWizardStep(2); }}>
+                  <TouchableOpacity style={[wz.row, { minHeight: 44 }]} onPress={() => { setForm(p => ({ ...p, facultyId: item.id })); setWizardStep(2); }} accessibilityRole="button" accessibilityLabel={`Select faculty ${item.full_name}`}>
                     <View style={[wz.avatar, { backgroundColor: "#4f46e5" }]}>
                       <Text style={wz.avatarText}>{(item.full_name || '?')[0].toUpperCase()}</Text>
                     </View>
@@ -253,9 +291,8 @@ export default function ManageFacultyPage() {
             {wizardStep === 2 && (
               <>
                 {wizardStep > 1 && (
-                  <TouchableOpacity style={wz.backBtn} onPress={() => setWizardStep(1)}>
-                    <MaterialIcons name="arrow-back" size={16} color={C.accent} />
-                    <Text style={wz.backText}>Back</Text>
+                  <TouchableOpacity style={[wz.changeBtn, { minHeight: 44 }]} onPress={() => setWizardStep(1)} accessibilityRole="button" accessibilityLabel="Change faculty">
+                    <Text style={wz.changeText}>Change faculty</Text>
                   </TouchableOpacity>
                 )}
                 <FlatList
@@ -265,7 +302,7 @@ export default function ManageFacultyPage() {
                   contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
                   ListEmptyComponent={<Text style={{ color: C.muted, textAlign: 'center', padding: 20 }}>No classes available</Text>}
                   renderItem={({ item }) => (
-                    <TouchableOpacity style={wz.row} onPress={() => { setForm(p => ({ ...p, classId: item.id })); setWizardStep(3); }}>
+                    <TouchableOpacity style={[wz.row, { minHeight: 44 }]} onPress={() => { setForm(p => ({ ...p, classId: item.id })); setWizardStep(3); }} accessibilityRole="button" accessibilityLabel={`Select class ${item.class_name} ${item.section || ''}`}>
                       <View style={[wz.avatar, { backgroundColor: C.green }]}>
                         <MaterialIcons name="layers" size={18} color="#fff" />
                       </View>
@@ -283,12 +320,11 @@ export default function ManageFacultyPage() {
             {/* Step 3: Select Subject or Class Teacher */}
             {wizardStep === 3 && (
               <>
-                <TouchableOpacity style={wz.backBtn} onPress={() => setWizardStep(2)}>
-                  <MaterialIcons name="arrow-back" size={16} color={C.accent} />
-                  <Text style={wz.backText}>Back</Text>
+                <TouchableOpacity style={[wz.changeBtn, { minHeight: 44 }]} onPress={() => setWizardStep(2)} accessibilityRole="button" accessibilityLabel="Change class">
+                  <Text style={wz.changeText}>Change class</Text>
                 </TouchableOpacity>
                 <ScrollView style={{ maxHeight: 340 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                  <TouchableOpacity style={[wz.row, { borderColor: C.amber, borderWidth: 1 }]} onPress={() => { setForm(p => ({ ...p, subjectId: null })); setWizardStep(4); }}>
+                  <TouchableOpacity style={[wz.row, { borderColor: C.amber, borderWidth: 1, minHeight: 44 }]} onPress={() => { setForm(p => ({ ...p, subjectId: null })); setWizardStep(4); }} accessibilityRole="button" accessibilityLabel="Assign as class teacher, no specific subject">
                     <View style={[wz.avatar, { backgroundColor: C.amber }]}>
                       <MaterialIcons name="school" size={18} color="#fff" />
                     </View>
@@ -299,7 +335,7 @@ export default function ManageFacultyPage() {
                     <MaterialIcons name="chevron-right" size={20} color={C.dim} />
                   </TouchableOpacity>
                   {subjects.map(sub => (
-                    <TouchableOpacity key={sub.id} style={wz.row} onPress={() => { setForm(p => ({ ...p, subjectId: sub.id })); setWizardStep(4); }}>
+                    <TouchableOpacity key={sub.id} style={[wz.row, { minHeight: 44 }]} onPress={() => { setForm(p => ({ ...p, subjectId: sub.id })); setWizardStep(4); }} accessibilityRole="button" accessibilityLabel={`Assign subject ${sub.subject_name}`}>
                       <View style={[wz.avatar, { backgroundColor: C.cyan }]}>
                         <MaterialIcons name="menu-book" size={18} color="#fff" />
                       </View>
@@ -317,9 +353,8 @@ export default function ManageFacultyPage() {
             {/* Step 4: Confirm */}
             {wizardStep === 4 && (
               <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
-                <TouchableOpacity style={wz.backBtn} onPress={() => setWizardStep(3)}>
-                  <MaterialIcons name="arrow-back" size={16} color={C.accent} />
-                  <Text style={wz.backText}>Back</Text>
+                <TouchableOpacity style={[wz.changeBtn, { minHeight: 44 }]} onPress={() => setWizardStep(3)} accessibilityRole="button" accessibilityLabel="Change subject">
+                  <Text style={wz.changeText}>Change subject</Text>
                 </TouchableOpacity>
 
                 <View style={wz.confirmBox}>
@@ -329,7 +364,7 @@ export default function ManageFacultyPage() {
                   <ConfirmRow icon="menu-book" label="Subject" value={selectedSub?.subject_name || 'N/A'} last />
                 </View>
 
-                <TouchableOpacity style={wz.confirmBtn} onPress={handleAssign}>
+                <TouchableOpacity style={wz.confirmBtn} onPress={handleAssign} accessibilityRole="button" accessibilityLabel="Confirm faculty assignment">
                   <MaterialIcons name="check-circle" size={20} color="#fff" />
                   <Text style={wz.confirmBtnText}>Confirm Assignment</Text>
                 </TouchableOpacity>
@@ -356,7 +391,7 @@ function ConfirmRow({ icon, label, value, last }) {
 
 const wz = StyleSheet.create({
   stepBar: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 8, paddingBottom: 12 },
-  stepDot: { width: 24, height: 4, borderRadius: 2, backgroundColor: "#ffffff" },
+  stepDot: { width: 24, height: 4, borderRadius: 2, backgroundColor: "#d9e3f3" },
   stepDotActive: { backgroundColor: C.accent },
   stepDotCurrent: { width: 32 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, marginTop: 8, backgroundColor: C.surface, borderRadius: 12 },
@@ -364,8 +399,8 @@ const wz = StyleSheet.create({
   avatarText: { fontSize: 16, fontWeight: '700', color: '#fff' },
   name: { fontSize: 14, fontWeight: '600', color: C.text },
   sub: { fontSize: 12, color: C.muted, marginTop: 1 },
-  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingBottom: 8 },
-  backText: { fontSize: 13, color: C.accent, fontWeight: '500' },
+  changeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingBottom: 8 },
+  changeText: { fontSize: 13, color: C.accent, fontWeight: '500' },
   confirmBox: { backgroundColor: C.surface, borderRadius: 12, padding: 4, marginTop: 8 },
   confirmRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 12 },
   confirmBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: C.green, paddingVertical: 14, borderRadius: 12, marginTop: 16 },

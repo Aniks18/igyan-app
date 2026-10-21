@@ -17,7 +17,6 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
 import Header from '../../components/Header';
 import { IconSymbol } from '../../components/IconSymbol';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -87,6 +86,7 @@ export default function DailyCalendarPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [snapshotting, setSnapshotting] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [bootError, setBootError] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState(getWeekDates(new Date()));
 
@@ -111,11 +111,14 @@ export default function DailyCalendarPage() {
   useEffect(() => { boot(); }, []);
   useEffect(() => { setWeekDates(getWeekDates(selectedDate)); }, [selectedDate]);
   useEffect(() => {
-    if (template && days.length > 0) loadDay();
+    if (template && days.length > 0) {
+      loadDay().catch((e) => console.error('DailyCalendar loadDay:', e));
+    }
   }, [selectedDate, template, days, selectedClassId, myClassId]);
 
   const boot = async () => {
     setLoading(true);
+    setBootError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
@@ -146,6 +149,7 @@ export default function DailyCalendarPage() {
       }
     } catch (e) {
       console.error('boot:', e);
+      setBootError('Could not load timetable data. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -177,8 +181,14 @@ export default function DailyCalendarPage() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadDay();
-    setRefreshing(false);
+    try {
+      await loadDay();
+    } catch (e) {
+      console.error('DailyCalendar refresh:', e);
+      Alert.alert('Error', 'Could not refresh. Check your connection and try again.');
+    } finally {
+      setRefreshing(false);
+    }
   }, [selectedDate, template, days, selectedClassId, myClassId]);
 
   const shiftWeek = (dir) => {
@@ -228,6 +238,7 @@ export default function DailyCalendarPage() {
 
   // ─── Cancel a period ──────────────────────
   const handleCancelPeriod = (entryId) => {
+    if (!entryId) return;
     Alert.alert('Cancel Period', 'Mark this period as cancelled?', [
       { text: 'No', style: 'cancel' },
       { text: 'Yes, Cancel', style: 'destructive', onPress: async () => {
@@ -244,7 +255,7 @@ export default function DailyCalendarPage() {
   };
 
   const handleSelectSubstitute = async (faculty) => {
-    if (!subTarget) return;
+    if (!subTarget?.entryId) return;
     setSubModalVisible(false);
     await updateDailyEntry(subTarget.entryId, {
       actual_faculty_id: faculty.id,
@@ -292,6 +303,9 @@ export default function DailyCalendarPage() {
         status: useDaily ? entry?.status : null,
         className: entry?.classes ? `${entry.classes.class_name} ${entry.classes.section || ''}`.trim() : '',
         entryId: entry?.id,
+        // Cancel/substitute/restore operate on DAILY entry rows. Master
+        // template ids must never be passed to updateDailyEntry.
+        isDailyEntry: useDaily && !!entry,
       };
     });
   }, [slots, masterEntries, dailyEntries]);
@@ -305,7 +319,7 @@ export default function DailyCalendarPage() {
   if (loading) {
     return (
       <View style={s.root}>
-        <Header title="Manage Timetable" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Timetable" onMenuPress={openSideNav} />
         <View style={s.center}>
           <ActivityIndicator size="large" color={C.accent} />
           <Text style={s.mutedText}>Loading timetable…</Text>
@@ -314,10 +328,31 @@ export default function DailyCalendarPage() {
     );
   }
 
+  if (bootError) {
+    return (
+      <View style={s.root}>
+        <Header title="Manage Timetable" onMenuPress={openSideNav} />
+        <View style={s.center}>
+          <IconSymbol name="cloud.fill" size={44} color={C.dim} />
+          <Text style={s.emptyTitle}>Could not load timetable</Text>
+          <Text style={s.mutedText}>{bootError}</Text>
+          <TouchableOpacity
+            onPress={boot}
+            style={[s.actionPill, { backgroundColor: C.accentDim, marginTop: 12 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Try loading the timetable again"
+          >
+            <Text style={[s.actionPillText, { color: C.accent }]}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   if (!template) {
     return (
       <View style={s.root}>
-        <Header title="Manage Timetable" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Manage Timetable" onMenuPress={openSideNav} />
         <View style={s.center}>
           <IconSymbol name="calendar" size={44} color={C.dim} />
           <Text style={s.emptyTitle}>No Timetable Found</Text>
@@ -333,7 +368,7 @@ export default function DailyCalendarPage() {
 
   return (
     <View style={s.root}>
-      <Header title="Manage Timetable" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Manage Timetable" onMenuPress={openSideNav} />
 
       <ScrollView
         style={s.scroll}
@@ -386,7 +421,7 @@ export default function DailyCalendarPage() {
               <TouchableOpacity style={s.actionBtn} onPress={handleCreateSnapshot} disabled={snapshotting}>
                 {snapshotting
                   ? <ActivityIndicator size="small" color="#fff" />
-                  : <><IconSymbol name="calendar" size={15} color="#fff" /><Text style={s.actionBtnText}>Create Today's Snapshot</Text></>}
+                  : <><IconSymbol name="calendar" size={15} color="#fff" /><Text style={s.actionBtnText}>{"Create Today's Snapshot"}</Text></>}
               </TouchableOpacity>
             )}
             {isDraft && (
@@ -541,7 +576,7 @@ function SlotCard({ slot, canEdit, onCancel, onSubstitute, onRestore }) {
         )}
 
         {/* ── Action buttons ── */}
-        {canEdit && slot.entryId && (
+        {canEdit && slot.isDailyEntry && slot.entryId && (
           <View style={s.actionsRow}>
             {(isCancelled || isSubstituted) ? (
               <TouchableOpacity style={[s.actionPill, { backgroundColor: C.accentDim }]} onPress={onRestore} activeOpacity={0.6}>

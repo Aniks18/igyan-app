@@ -4,7 +4,7 @@
  * Includes "New Chat" button + contact picker modal
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/Header';
@@ -45,26 +45,39 @@ export default function ChatListPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [conversations, setConversations] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
   // New Chat modal state
   const [showNewChat, setShowNewChat] = useState(false);
   const [contacts, setContacts] = useState(null);
   const [contactsLoading, setContactsLoading] = useState(false);
+  const [contactsError, setContactsError] = useState('');
   const [selectedChild, setSelectedChild] = useState(null);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const data = await getConversations(user.id, role);
       setConversations(data || []);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError('Could not load conversations. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [user?.id, role]);
 
-  const onRefresh = useCallback(async () => { setRefreshing(true); await load(); setRefreshing(false); }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await load();
+    } catch (e) {
+      console.error(e);
+    } finally { setRefreshing(false); }
+  }, [load]);
 
   const openChat = (conv) => {
     router.push({
@@ -82,6 +95,7 @@ export default function ChatListPage() {
   const openNewChat = async () => {
     setShowNewChat(true);
     setContactsLoading(true);
+    setContactsError('');
     setSelectedChild(null);
     try {
       const data = await getAvailableContacts(user.id, role, user.school_id);
@@ -92,7 +106,7 @@ export default function ChatListPage() {
       }
     } catch (e) {
       console.error('Error loading contacts:', e);
-      Alert.alert('Error', 'Could not load contacts');
+      setContactsError('Could not load contacts. Check your connection and try again.');
     } finally {
       setContactsLoading(false);
     }
@@ -124,7 +138,7 @@ export default function ChatListPage() {
       });
     } catch (e) {
       console.error('Error creating conversation:', e);
-      Alert.alert('Error', e.message || 'Could not start conversation');
+      setContactsError(e.message || 'Could not start the conversation. Try again.');
     } finally {
       setCreating(false);
     }
@@ -149,7 +163,11 @@ export default function ChatListPage() {
                 const active = selectedChild?.student_id === c.student_id;
                 return (
                   <TouchableOpacity key={c.id} onPress={() => setSelectedChild(c)}
-                    style={[ms.chip, active && { backgroundColor: C.accent, borderColor: C.accent }]} activeOpacity={0.7}>
+                    style={[ms.chip, active && { backgroundColor: C.accent, borderColor: C.accent }]} activeOpacity={0.7}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: active }}
+                    accessibilityLabel={`Child ${c.student?.full_name || 'unknown'}`}
+                  >
                     <Text style={[ms.chipText, active && { color: '#fff' }]}>{c.student?.full_name || 'Child'}</Text>
                   </TouchableOpacity>
                 );
@@ -164,7 +182,10 @@ export default function ChatListPage() {
           <Text style={{ color: C.muted, fontSize: 13, textAlign: 'center', marginTop: 16 }}>No class teachers found in your school</Text>
         : teachers.map(t => (
           <TouchableOpacity key={t.id} style={ms.contactRow} activeOpacity={0.6}
-            onPress={() => startConversation(t.id, t.full_name, selectedChild?.student_id, selectedChild?.student?.full_name)}>
+            onPress={() => startConversation(t.id, t.full_name, selectedChild?.student_id, selectedChild?.student?.full_name)}
+            accessibilityRole="button"
+            accessibilityLabel={`Start conversation with ${t.full_name}`}
+          >
             <View style={[ms.avatar, { backgroundColor: pickColor(t.full_name) }]}>
               <Text style={ms.avatarText}>{getInitials(t.full_name)}</Text>
             </View>
@@ -191,7 +212,10 @@ export default function ChatListPage() {
         <Text style={ms.sectionTitle}>Parents</Text>
         {parents.map(p => (
           <TouchableOpacity key={p.id} style={ms.contactRow} activeOpacity={0.6}
-            onPress={() => startConversation(p.parent_id, p.parent?.full_name, p.student_id, p.student?.full_name)}>
+            onPress={() => startConversation(p.parent_id, p.parent?.full_name, p.student_id, p.student?.full_name)}
+            accessibilityRole="button"
+            accessibilityLabel={`Start conversation with ${p.parent?.full_name || 'parent'}`}
+          >
             <View style={[ms.avatar, { backgroundColor: pickColor(p.parent?.full_name) }]}>
               <Text style={ms.avatarText}>{getInitials(p.parent?.full_name)}</Text>
             </View>
@@ -210,15 +234,37 @@ export default function ChatListPage() {
   if (loading) {
     return (
       <View style={s.root}>
-        <Header title="Messages" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Messages" onMenuPress={openSideNav} />
         <View style={s.center}><ActivityIndicator size="large" color={C.accent} /><Text style={s.muted}>Loading conversations…</Text></View>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={s.root}>
+        <Header title="Messages" onMenuPress={openSideNav} />
+        <View style={s.empty}>
+          <MaterialIcons name="cloud-off" size={48} color={C.dim} />
+          <Text style={{ fontSize: 15, fontWeight: '600', color: C.text, marginTop: 10 }}>Could not load conversations</Text>
+          <Text style={s.muted}>{loadError}</Text>
+          <TouchableOpacity
+            onPress={load}
+            style={{ marginTop: 14, backgroundColor: C.accent, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 8 }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Try loading conversations again"
+          >
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Try again</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={s.root}>
-      <Header title="Messages" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Messages" onMenuPress={openSideNav} />
 
       {/* Summary bar */}
       <View style={s.summary}>
@@ -235,7 +281,13 @@ export default function ChatListPage() {
             <MaterialIcons name="chat-bubble-outline" size={48} color={C.dim} />
             <Text style={{ fontSize: 15, fontWeight: '600', color: C.text, marginTop: 10 }}>No conversations yet</Text>
             <Text style={s.muted}>{isParent ? 'Tap + below to message your child\'s teacher' : 'Tap + below to message a parent'}</Text>
-            <TouchableOpacity onPress={openNewChat} style={{ marginTop: 14, backgroundColor: C.accent, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={openNewChat}
+              style={{ marginTop: 14, backgroundColor: C.accent, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Start a conversation"
+            >
               <MaterialIcons name="add" size={18} color="#fff" />
               <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Start a Conversation</Text>
             </TouchableOpacity>
@@ -249,13 +301,20 @@ export default function ChatListPage() {
             const time = timeAgo(conv.last_message_at);
 
             return (
-              <TouchableOpacity key={conv.id} style={s.convRow} onPress={() => openChat(conv)} activeOpacity={0.6}>
+              <TouchableOpacity
+                key={conv.id}
+                style={s.convRow}
+                onPress={() => openChat(conv)}
+                activeOpacity={0.6}
+                accessibilityRole="button"
+                accessibilityLabel={`${name}${studentName ? `, about ${studentName}` : ''}${unread > 0 ? `, ${unread} unread messages` : ''}`}
+              >
                 <View style={[s.avatar, { backgroundColor: pickColor(name) }]}>
                   <Text style={s.avatarText}>{getInitials(name)}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={[s.convName, unread > 0 && { color: '#fff', fontWeight: '700' }]} numberOfLines={1}>{name}</Text>
+                    <Text style={[s.convName, unread > 0 && { fontWeight: '700' }]} numberOfLines={1}>{name}</Text>
                     {time ? <Text style={[s.time, unread > 0 && { color: C.accent }]}>{time}</Text> : null}
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
@@ -274,7 +333,13 @@ export default function ChatListPage() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity style={s.fab} onPress={openNewChat} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={s.fab}
+        onPress={openNewChat}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Start a new conversation"
+      >
         <MaterialIcons name="add" size={26} color="#fff" />
       </TouchableOpacity>
 
@@ -283,12 +348,32 @@ export default function ChatListPage() {
         <View style={ms.fullScreen}>
           {/* Header */}
           <View style={ms.headerRow}>
-            <TouchableOpacity onPress={() => setShowNewChat(false)} style={ms.backBtn} activeOpacity={0.7}>
-              <MaterialIcons name="arrow-back" size={22} color={C.text} />
+            <TouchableOpacity
+              onPress={() => setShowNewChat(false)}
+              style={ms.backBtn}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Close new conversation"
+            >
+              <MaterialIcons name="close" size={22} color={C.text} />
             </TouchableOpacity>
             <Text style={ms.headerTitle}>New Conversation</Text>
             <View style={{ width: 36 }} />
           </View>
+
+          {contactsError ? (
+            <View style={{ margin: 16, backgroundColor: '#fdecea', borderWidth: 1, borderColor: '#b3261e', borderRadius: 12, padding: 14, gap: 10 }}>
+              <Text accessibilityLiveRegion="polite" style={{ fontSize: 14, lineHeight: 20, color: C.text }}>{contactsError}</Text>
+              <TouchableOpacity
+                onPress={openNewChat}
+                style={{ alignSelf: 'flex-start', backgroundColor: C.accent, borderRadius: 10, paddingHorizontal: 16, minHeight: 44, justifyContent: 'center' }}
+                accessibilityRole="button"
+                accessibilityLabel="Try loading contacts again"
+              >
+                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Try again</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           {contactsLoading ? (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -320,8 +405,8 @@ const ms = StyleSheet.create({
   backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: C.text },
   creatingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: '#000c', alignItems: 'center', justifyContent: 'center' },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1, borderColor: C.border, backgroundColor: C.bg },
+  sectionTitle: { fontSize: 13, fontWeight: '600', color: C.muted, marginBottom: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 7, minHeight: 44, justifyContent: 'center', borderRadius: 20, borderWidth: 1, borderColor: C.border, backgroundColor: C.bg },
   chipText: { fontSize: 13, fontWeight: '500', color: C.text },
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border },
   avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },

@@ -15,7 +15,6 @@ import {
   Linking,
   RefreshControl,
 } from 'react-native';
-import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
@@ -128,8 +127,6 @@ export default function IncubationHubPage() {
       <Header
         title="Incubation Hub"
         onMenuPress={openSideNav}
-        showBack
-        onBackPress={() => router.back()}
       />
 
       <ScrollView

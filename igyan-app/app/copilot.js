@@ -14,7 +14,6 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedView } from '../components/ThemedView';
 import { ThemedText } from '../components/ThemedText';
@@ -27,7 +26,6 @@ import CopilotSidebar from '../components/copilot/Sidebar';
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 export default function AICopilotScreen() {
-  const router = useRouter();
   const cardColor = useThemeColor({}, 'card');
   const textColor = useThemeColor({}, 'text');
   const scrollViewRef = useRef(null);
@@ -206,7 +204,7 @@ export default function AICopilotScreen() {
 
       const title = await callOpenAI(titlePrompt);
       return title.trim().replace(/['"]/g, '');
-    } catch (error) {
+    } catch (_error) {
       return firstMessage.slice(0, 40);
     }
   };
@@ -313,7 +311,7 @@ export default function AICopilotScreen() {
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-    } catch (error) {
+    } catch (_error) {
       const errorMessage = {
         role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.',
@@ -518,9 +516,6 @@ export default function AICopilotScreen() {
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: cardColor }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.left" size={28} color="#8B5CF6" />
-        </TouchableOpacity>
         <View style={styles.headerInfo}>
           <ThemedText style={styles.headerTitle}>AI Copilot 🤖</ThemedText>
           <ThemedText style={styles.headerSubtitle}>

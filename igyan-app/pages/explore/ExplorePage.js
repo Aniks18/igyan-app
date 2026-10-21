@@ -3,7 +3,7 @@
  * Discover AI-powered tools and resources
  */
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ScrollView, View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
@@ -58,6 +58,15 @@ export default function ExplorePage() {
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
   const backgroundColor = useThemeColor({}, 'background');
+  const [query, setQuery] = useState('');
+
+  const visibleTools = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return aiTools;
+    return aiTools.filter((tool) =>
+      `${tool.title} ${tool.description}`.toLowerCase().includes(q)
+    );
+  }, [query]);
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor }}>
@@ -87,6 +96,11 @@ export default function ExplorePage() {
               }}
               placeholder="Search tools and resources..."
               placeholderTextColor="#999"
+              accessibilityLabel="Search tools and resources"
+              value={query}
+              onChangeText={setQuery}
+              returnKeyType="search"
+              autoCorrect={false}
             />
           </View>
         </View>
@@ -104,6 +118,8 @@ export default function ExplorePage() {
             </View>
             <TouchableOpacity
               onPress={() => router.push('/tools')}
+              accessibilityRole="button"
+              accessibilityLabel="View all AI tools"
               style={{
                 backgroundColor: "#4f46e5",
                 paddingHorizontal: 16,
@@ -124,7 +140,12 @@ export default function ExplorePage() {
             gap: 16,
             marginBottom: 24,
           }}>
-            {aiTools.map((tool) => (
+            {visibleTools.length === 0 && (
+              <ThemedText style={{ fontSize: 14, color: '#999', marginBottom: 24 }}>
+                No tools match your search.
+              </ThemedText>
+            )}
+            {visibleTools.map((tool) => (
               <TouchableOpacity
                 key={tool.id}
                 onPress={() => {
@@ -135,6 +156,8 @@ export default function ExplorePage() {
                   }
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={tool.title}
                 style={{ width: CARD_WIDTH }}
               >
                 <View style={{
@@ -239,7 +262,7 @@ export default function ExplorePage() {
               </ThemedText>
             </View>
             <ThemedText style={{ fontSize: 14, lineHeight: 20, color: '#999' }}>
-              We're constantly adding new AI-powered tools based on user feedback. 
+              {"We're constantly adding new AI-powered tools based on user feedback. "}
               Stay tuned for quiz generators, flashcards, study planners, and more!
             </ThemedText>
           </View>

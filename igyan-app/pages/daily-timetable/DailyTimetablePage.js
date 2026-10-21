@@ -15,7 +15,6 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { router } from 'expo-router';
 import Header from '../../components/Header';
 import { IconSymbol } from '../../components/IconSymbol';
 import { useSideNav } from '../../utils/SideNavContext';
@@ -88,15 +87,12 @@ export default function DailyTimetablePage() {
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [myClassId, setMyClassId] = useState(null);
 
-  // Boot
-  useEffect(() => { boot(); }, []);
-  useEffect(() => { setWeekDates(getWeekDates(selectedDate)); }, [selectedDate]);
-  useEffect(() => {
-    if (template && days.length > 0) loadDay();
-  }, [selectedDate, template, days, selectedClassId, myClassId]);
+  const [loadError, setLoadError] = useState('');
 
-  const boot = async () => {
+  // Boot
+  const boot = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       if (!user?.school_id) return;
       const sess = await getActiveSession(user.school_id);
@@ -118,31 +114,54 @@ export default function DailyTimetablePage() {
         const sc = await getStudentClass(user.id);
         if (sc) setMyClassId(sc.class_id);
       }
-    } catch (e) { console.error('DailyTimetable boot:', e); }
+    } catch (e) {
+      console.error('DailyTimetable boot:', e);
+      setLoadError('Could not load the timetable. Check your connection and try again.');
+    }
     finally { setLoading(false); }
-  };
+  }, [user?.school_id, user?.id, user?.role, isAdmin]);
 
-  const loadDay = async () => {
+  useEffect(() => { boot(); }, [boot]);
+  useEffect(() => { setWeekDates(getWeekDates(selectedDate)); }, [selectedDate]);
+
+  const loadDay = useCallback(async () => {
     if (!template) return;
     const classId = isAdmin ? selectedClassId : myClassId;
     if (!classId) return;
 
-    // Only fetch published records
-    const record = await getDailyRecord(user.school_id, fmtDate(selectedDate));
-    setDailyRecord(record);
+    try {
+      // Only fetch published records
+      const record = await getDailyRecord(user.school_id, fmtDate(selectedDate));
+      setDailyRecord(record);
 
-    if (record && record.status === 'published') {
-      setDailyEntries(await getDailyEntries(record.id, classId));
-    } else {
-      setDailyEntries([]);
+      if (record && record.status === 'published') {
+        setDailyEntries(await getDailyEntries(record.id, classId));
+      } else {
+        setDailyEntries([]);
+      }
+      setLoadError('');
+    } catch (e) {
+      // A failed day-load must not masquerade as "not published".
+      console.error('DailyTimetable loadDay:', e);
+      setLoadError('Could not load this day. Check your connection and try again.');
     }
-  };
+  }, [template, selectedDate, user?.school_id, isAdmin, selectedClassId, myClassId]);
+
+  useEffect(() => {
+    if (template && days.length > 0) loadDay();
+  }, [template, days, loadDay]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadDay();
-    setRefreshing(false);
-  }, [selectedDate, template, days, selectedClassId, myClassId]);
+    try {
+      await loadDay();
+    } catch (e) {
+      console.error('DailyTimetable refresh:', e);
+      setLoadError('Could not refresh. Check your connection and try again.');
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadDay]);
 
   const shiftWeek = (dir) => {
     const d = new Date(selectedDate);
@@ -177,7 +196,7 @@ export default function DailyTimetablePage() {
   if (loading) {
     return (
       <View style={s.root}>
-        <Header title="Daily Timetable" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Daily Timetable" onMenuPress={openSideNav} />
         <View style={s.center}>
           <ActivityIndicator size="large" color={C.accent} />
           <Text style={s.mutedText}>Loading…</Text>
@@ -186,10 +205,31 @@ export default function DailyTimetablePage() {
     );
   }
 
+  if (loadError) {
+    return (
+      <View style={s.root}>
+        <Header title="Daily Timetable" onMenuPress={openSideNav} />
+        <View style={s.center}>
+          <IconSymbol name="cloud.fill" size={44} color={C.dim} />
+          <Text style={s.emptyTitle}>Could not load timetable</Text>
+          <Text style={s.mutedText}>{loadError}</Text>
+          <TouchableOpacity
+            onPress={boot}
+            style={s.retryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Try loading the timetable again"
+          >
+            <Text style={s.retryBtnText}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   if (!template) {
     return (
       <View style={s.root}>
-        <Header title="Daily Timetable" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+        <Header title="Daily Timetable" onMenuPress={openSideNav} />
         <View style={s.center}>
           <IconSymbol name="calendar" size={44} color={C.dim} />
           <Text style={s.emptyTitle}>No Timetable</Text>
@@ -201,7 +241,7 @@ export default function DailyTimetablePage() {
 
   return (
     <View style={s.root}>
-      <Header title="Daily Timetable" onMenuPress={openSideNav} showBack onBackPress={() => router.back()} />
+      <Header title="Daily Timetable" onMenuPress={openSideNav} />
 
       <ScrollView
         style={s.scroll}
@@ -211,9 +251,24 @@ export default function DailyTimetablePage() {
       >
         {/* Week Nav */}
         <View style={s.weekRow}>
-          <TouchableOpacity onPress={() => shiftWeek(-1)} style={s.arrowBtn}><IconSymbol name="chevron.left" size={16} color={C.text} /></TouchableOpacity>
-          <TouchableOpacity onPress={() => setSelectedDate(new Date())} style={s.todayPill}><Text style={s.todayPillText}>Today</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => shiftWeek(1)} style={s.arrowBtn}><IconSymbol name="chevron.right" size={16} color={C.text} /></TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => shiftWeek(-1)}
+            style={s.arrowBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Previous week"
+          ><IconSymbol name="chevron.left" size={16} color={C.text} /></TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setSelectedDate(new Date())}
+            style={s.todayPill}
+            accessibilityRole="button"
+            accessibilityLabel="Jump to today"
+          ><Text style={s.todayPillText}>Today</Text></TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => shiftWeek(1)}
+            style={s.arrowBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Next week"
+          ><IconSymbol name="chevron.right" size={16} color={C.text} /></TouchableOpacity>
         </View>
 
         {/* Date Strip */}
@@ -222,7 +277,14 @@ export default function DailyTimetablePage() {
             const sel = isSameDay(dt, selectedDate);
             const today = isSameDay(dt, new Date());
             return (
-              <TouchableOpacity key={i} style={[s.dateChip, sel && s.dateChipActive]} onPress={() => setSelectedDate(new Date(dt))}>
+              <TouchableOpacity
+                key={i}
+                style={[s.dateChip, sel && s.dateChipActive]}
+                onPress={() => setSelectedDate(new Date(dt))}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: sel }}
+                accessibilityLabel={`${DAYS_SHORT[i]}, ${dt.getDate()}`}
+              >
                 <Text style={[s.dateChipDay, sel && s.dateChipDayActive]}>{DAYS_SHORT[i]}</Text>
                 <Text style={[s.dateChipNum, sel && s.dateChipNumActive]}>{dt.getDate()}</Text>
                 {today && <View style={[s.todayDot, sel && { backgroundColor: '#fff' }]} />}
@@ -236,10 +298,17 @@ export default function DailyTimetablePage() {
         {/* Admin: class selector */}
         {isAdmin && classes.length > 0 && (
           <View style={s.chipRow}>
-            <Text style={s.chipRowLabel}>CLASS</Text>
+            <Text style={s.chipRowLabel}>Class</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {classes.map((cls) => (
-                <TouchableOpacity key={cls.id} style={[s.chip, selectedClassId === cls.id && s.chipActive]} onPress={() => setSelectedClassId(cls.id)}>
+                <TouchableOpacity
+                  key={cls.id}
+                  style={[s.chip, selectedClassId === cls.id && s.chipActive]}
+                  onPress={() => setSelectedClassId(cls.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: selectedClassId === cls.id }}
+                  accessibilityLabel={`Class ${cls.class_name} ${cls.section || ''}`}
+                >
                   <Text style={[s.chipText, selectedClassId === cls.id && s.chipTextActive]}>{cls.class_name} {cls.section || ''}</Text>
                 </TouchableOpacity>
               ))}
@@ -360,8 +429,8 @@ const s = StyleSheet.create({
   emptyTitle: { fontSize: 17, fontWeight: '600', color: C.text, marginTop: 8 },
 
   weekRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 10 },
-  arrowBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
-  todayPill: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 14, backgroundColor: C.accentDim },
+  arrowBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
+  todayPill: { paddingHorizontal: 16, paddingVertical: 7, minHeight: 44, justifyContent: 'center', borderRadius: 14, backgroundColor: C.accentDim },
   todayPillText: { fontSize: 13, fontWeight: '600', color: C.accent },
 
   dateStripContent: { gap: 6, paddingVertical: 4, paddingHorizontal: 2 },
@@ -376,8 +445,10 @@ const s = StyleSheet.create({
   dayLabel: { fontSize: 14, fontWeight: '600', color: C.text, marginTop: 10, marginBottom: 12 },
 
   chipRow: { marginBottom: 12, gap: 6 },
-  chipRowLabel: { fontSize: 10, fontWeight: '600', color: C.dim, letterSpacing: 1 },
-  chip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 14, backgroundColor: C.surface, marginRight: 6 },
+  chipRowLabel: { fontSize: 12, fontWeight: '600', color: C.dim },
+  chip: { paddingHorizontal: 14, paddingVertical: 6, minHeight: 44, justifyContent: 'center', borderRadius: 14, backgroundColor: C.surface, marginRight: 6 },
+  retryBtn: { marginTop: 14, backgroundColor: C.accent, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 8 },
+  retryBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   chipActive: { backgroundColor: C.accent },
   chipText: { fontSize: 12, fontWeight: '500', color: C.muted },
   chipTextActive: { color: '#fff' },
