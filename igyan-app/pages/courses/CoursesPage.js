@@ -75,7 +75,7 @@ export default function CoursesPage() {
     <ThemedView style={{ flex: 1 }}>
       {/* Header */}
       <View style={{ padding: 16, paddingBottom: 0 }}>
-        <ThemedText style={{ fontSize: 32, fontWeight: '800', marginBottom: 16 }}>
+        <ThemedText style={{ fontSize: 28, fontWeight: '800', marginBottom: 14 }}>
           My Courses
         </ThemedText>
         

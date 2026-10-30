@@ -1,3 +1,4 @@
+import { chatCompletion } from '../../services/aiClient';
 /**
  * iGyan App - Text Summarizer Tool
  * AI-powered text summarization
@@ -12,7 +13,6 @@ import Header from '../../components/Header';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { useSideNav } from '../../utils/SideNavContext';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 const SUMMARY_STYLES = [
   { value: 'concise', label: 'Concise', description: 'Brief, to-the-point summary' },
@@ -56,15 +56,9 @@ ${text}
 Summary:`;
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
             {
               role: 'system',
               content: 'You are a helpful assistant that creates clear, accurate summaries of text. Focus on extracting the most important information while maintaining clarity.'
@@ -74,19 +68,12 @@ Summary:`;
               content: prompt
             }
           ],
-          temperature: 0.5,
-          max_tokens: 1000,
-        }),
+        temperature: 0.5,
+        maxTokens: 1000
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate summary');
-      }
-
-      const data = await response.json();
-      setSummary(data.choices[0].message.content.trim());
+      setSummary(completionContent.trim());
     } catch (err) {
-      console.error('Error generating summary:', err);
+
       Alert.alert('Error', 'Failed to generate summary. Please try again.');
     } finally {
       setGenerating(false);

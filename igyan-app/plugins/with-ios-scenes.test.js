@@ -25,3 +25,12 @@ test('prebuild refuses to overwrite an Objective-C delegate with Swift', async (
     modResults: { language: 'objc', contents: '' },
   }), /requires a Swift AppDelegate/);
 });
+
+test('prebuild raises every Pod target to the supported iOS version', async () => {
+  const config = withIOSScenes({});
+  const result = await config.mods.ios.podfile({
+    modRequest: {},
+    modResults: { contents: '  end\nend\n' },
+  });
+  assert.match(result.modResults.contents, /IPHONEOS_DEPLOYMENT_TARGET.*15\.1/);
+});

@@ -13,10 +13,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../../components';
 import Svg, { Circle } from 'react-native-svg';
+import { chatCompletion } from '../../services/aiClient';
+import { parseQuiz } from '../../services/apiUtils';
 
 const { width } = Dimensions.get('window');
-
-const OPENAI_API_KEY = 'YOUR_OPENAI_API_KEY'; // Replace with your key
 
 const COLORS = {
   background: "#f5f8ff",
@@ -273,7 +273,7 @@ const QuizQuestion = ({ question, questionNumber, totalQuestions, selectedAnswer
 
   useEffect(() => {
     if (selectedAnswer) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowExplanation(true);
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -281,11 +281,12 @@ const QuizQuestion = ({ question, questionNumber, totalQuestions, selectedAnswer
           useNativeDriver: true,
         }).start();
       }, 300);
+      return () => clearTimeout(timer);
     } else {
       setShowExplanation(false);
       fadeAnim.setValue(0);
     }
-  }, [selectedAnswer]);
+  }, [selectedAnswer, fadeAnim]);
 
   const getOptionStyle = (optionId) => {
     if (!selectedAnswer) return styles.optionDefault;
@@ -559,33 +560,24 @@ Return the response in this EXACT JSON format:
 
 Provide ONLY valid JSON, no additional commentary.`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert educational assessment creator. Generate engaging, accurate quizzes. Always return valid JSON.',
-            },
-            { role: 'user', content: prompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 3000,
-          response_format: { type: 'json_object' },
-        }),
+      const content = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert educational assessment creator. Generate engaging, accurate quizzes. Always return valid JSON.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+        maxTokens: 3000,
+        jsonMode: true,
       });
 
-      const data = await response.json();
-      const generatedQuiz = JSON.parse(data.choices[0].message.content);
+      const generatedQuiz = parseQuiz(content, formData.questionCount);
       setQuiz(generatedQuiz);
     } catch (error) {
-      console.error('Error generating quiz:', error);
-      setGenerateError('Quiz generation failed. Check your connection and try again.');
+      setGenerateError(error.message || 'Quiz generation failed. Check your connection and try again.');
     } finally {
       setGenerating(false);
     }
@@ -696,6 +688,7 @@ Provide ONLY valid JSON, no additional commentary.`;
             </View>
 
             <QuizQuestion
+              key={currentQuestion.id}
               question={currentQuestion}
               questionNumber={currentQuestionIndex + 1}
               totalQuestions={quiz.questions.length}

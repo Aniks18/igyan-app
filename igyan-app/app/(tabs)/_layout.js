@@ -64,6 +64,9 @@ export default function TabLayout() {
             backgroundColor: '#ffffff',
             borderTopColor: '#d9e3f3',
             borderTopWidth: 1,
+            height: 68,
+            paddingTop: 6,
+            paddingBottom: 8,
           },
         }}
       >
@@ -71,28 +74,28 @@ export default function TabLayout() {
           name="home"
           options={{
             title: 'Dashboard',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
           }}
         />
         <Tabs.Screen
           name="courses"
           options={{
             title: 'Learn',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={26} name="book.fill" color={color} />,
           }}
         />
         <Tabs.Screen
           name="explore"
           options={{
             title: 'Explore',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={26} name="magnifyingglass" color={color} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.fill" color={color} />,
           }}
         />
       </Tabs>

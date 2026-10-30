@@ -94,28 +94,27 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 24,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 28,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 12,
-    marginLeft: 4,
+    marginBottom: 16,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    padding: 20,
+    borderRadius: 18,
+    marginBottom: 12,
   },
   settingText: {
     flex: 1,
-    fontSize: 16,
-    marginLeft: 12,
+    fontSize: 18,
+    marginLeft: 16,
   },
   version: {
     textAlign: 'center',

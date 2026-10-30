@@ -1,3 +1,4 @@
+import { chatCompletion } from '../../services/aiClient';
 /**
  * iGyan App - Shark AI Page
  * AI-powered pitch evaluation system
@@ -27,7 +28,6 @@ import { useThemeColor } from '../../hooks/useThemeColor';
 import { useSideNav } from '../../utils/SideNavContext';
 import { useAuth } from '../../utils/AuthContext';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 const PITCH_DURATION = 300; // 5 minutes in seconds
 
 const EVALUATION_CRITERIA = [
@@ -247,7 +247,7 @@ export default function SharkAIPage() {
       // Speak summary
       speakText(`Your overall score is ${evaluation.scores.total} out of 100. ${evaluation.summary}`);
     } catch (error) {
-      console.error('Evaluation error:', error);
+
       Alert.alert('Error', 'Failed to evaluate pitch. Please try again.');
     } finally {
       setIsLoading(false);
@@ -281,29 +281,16 @@ Respond in this JSON format:
   "investment": "<Yes/No/Maybe with brief reason>"
 }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const completionContent = await chatCompletion({
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Document context: ${fileContent || 'No document uploaded'}\n\nPitch: ${pitchContent}` }
         ],
         temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to get AI response');
-    }
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+        maxTokens: 2000
+      });
+    const content = completionContent;
     
     try {
       // Try to parse JSON from the response
@@ -337,15 +324,9 @@ Respond in this JSON format:
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
             { 
               role: 'system', 
               content: `You are Shark AI, a helpful business investor assistant. Answer questions about pitches, business strategy, and entrepreneurship. Be encouraging but honest. ${language === 'hindi' ? 'Respond in Hindi if the user writes in Hindi.' : ''}` 
@@ -353,23 +334,18 @@ Respond in this JSON format:
             ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
             { role: 'user', content: inputMessage }
           ],
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
+        temperature: 0.7,
+        maxTokens: 1000
       });
-
-      if (!response.ok) throw new Error('API error');
-
-      const data = await response.json();
       const assistantMessage = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: completionContent,
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
-      Alert.alert('Error', 'Failed to send message');
+
+      Alert.alert('Error', error.message || 'Failed to send message');
     } finally {
       setIsLoading(false);
     }

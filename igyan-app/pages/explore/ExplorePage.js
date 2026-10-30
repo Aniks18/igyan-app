@@ -4,15 +4,12 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { ScrollView, View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import { ScrollView, View, TextInput, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { IconSymbol } from '../../components/IconSymbol';
 import { useThemeColor } from '../../hooks/useThemeColor';
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2; // 2 cards per row with padding
 
 const aiTools = [
   {
@@ -21,6 +18,7 @@ const aiTools = [
     description: 'Your personal AI tutor with memory',
     icon: 'brain.head.profile',
     color: '#8B5CF6',
+    route: '/copilot',
   },
   {
     id: 'code-tutor',
@@ -28,6 +26,7 @@ const aiTools = [
     description: 'Learn programming with AI guidance',
     icon: 'chevron.left.forwardslash.chevron.right',
     color: "#4f46e5",
+    route: '/tools/code-tutor',
   },
   {
     id: 'project-learning',
@@ -35,6 +34,7 @@ const aiTools = [
     description: 'Get personalized project recommendations',
     icon: 'cube.box.fill',
     color: '#10B981',
+    route: '/tools/project-learning',
   },
   {
     id: 'step-by-step',
@@ -42,6 +42,7 @@ const aiTools = [
     description: 'Create detailed learning roadmaps',
     icon: 'list.number',
     color: '#F59E0B',
+    route: '/tools/step-by-step',
   },
   {
     id: 'text-summarizer',
@@ -49,11 +50,14 @@ const aiTools = [
     description: 'Condense text into key insights',
     icon: 'doc.text.fill',
     color: '#06B6D4',
+    route: '/tools/text-summarizer',
   },
 ];
 
 export default function ExplorePage() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const cardWidth = (width - 48) / 2;
   const cardColor = useThemeColor({}, 'card');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
@@ -73,7 +77,7 @@ export default function ExplorePage() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header with Search */}
         <View style={{ padding: 16, paddingBottom: 8 }}>
-          <ThemedText style={{ fontSize: 32, fontWeight: '800', marginBottom: 16 }}>
+          <ThemedText style={{ fontSize: 28, fontWeight: '800', marginBottom: 14 }}>
             Explore
           </ThemedText>
           <View style={{
@@ -109,7 +113,7 @@ export default function ExplorePage() {
         <View style={{ paddingHorizontal: 16, marginTop: 8 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <View>
-              <ThemedText style={{ fontSize: 24, fontWeight: '700', marginBottom: 4 }}>
+              <ThemedText style={{ fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
                 🤖 AI Tools
               </ThemedText>
               <ThemedText style={{ fontSize: 14, color: '#999' }}>
@@ -148,17 +152,11 @@ export default function ExplorePage() {
             {visibleTools.map((tool) => (
               <TouchableOpacity
                 key={tool.id}
-                onPress={() => {
-                  if (tool.id === 'ai-copilot') {
-                    router.push('/copilot');
-                  } else {
-                    router.push('/tools');
-                  }
-                }}
+                onPress={() => router.push(tool.route)}
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel={tool.title}
-                style={{ width: CARD_WIDTH }}
+                style={{ width: cardWidth }}
               >
                 <View style={{
                   backgroundColor: cardColor,

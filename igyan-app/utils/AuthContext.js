@@ -100,7 +100,7 @@ export function AuthProvider({ children }) {
         .single();
 
       if (userError || !userData) {
-        throw new Error('Invalid email or password');
+        return { success: false, error: 'Invalid email or password' };
       }
 
       // 3. ROLE-BASED ACCESS CONTROL
@@ -161,7 +161,6 @@ export function AuthProvider({ children }) {
 
       return { success: true, data: userData };
     } catch (error) {
-      console.error('Login error:', error);
       return { success: false, error: error.message };
     }
   };

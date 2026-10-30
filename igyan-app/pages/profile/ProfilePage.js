@@ -15,10 +15,10 @@ import { useAuth } from '../../utils/AuthContext';
 import { supabase } from '../../utils/supabase';
 
 const menuItems = [
-  { icon: 'book.fill', title: 'My Courses', badge: 12 },
+  { icon: 'book.fill', title: 'My Courses', badge: 12, route: '/(tabs)/courses' },
   { icon: 'star.fill', title: 'Certificates', badge: 3 },
   { icon: 'bell.fill', title: 'Notifications', badge: 5 },
-  { icon: 'gear', title: 'Settings', badge: null },
+  { icon: 'gear', title: 'Settings', badge: null, route: '/settings' },
 ];
 
 const INSTITUTIONAL_ROLES = ['super_admin', 'co_admin', 'student', 'faculty'];
@@ -82,7 +82,7 @@ export default function ProfilePage() {
             {user?.image_base64 ? (
               <Image
                 source={{ uri: user.image_base64 }}
-                style={{ width: 100, height: 100, borderRadius: 50 }}
+                style={{ width: 112, height: 112, borderRadius: 56 }}
                 resizeMode="cover"
               />
             ) : (
@@ -186,7 +186,13 @@ export default function ProfilePage() {
         <View style={profileStyles.menuSection}>
           <ThemedText style={profileStyles.sectionTitle}>Account</ThemedText>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={index}>
+            <TouchableOpacity
+              key={item.title}
+              disabled={!item.route}
+              onPress={() => item.route && router.push(item.route)}
+              accessibilityRole={item.route ? 'button' : undefined}
+              accessibilityLabel={item.route ? `Open ${item.title}` : undefined}
+            >
               <View style={[profileStyles.menuItem, { backgroundColor: cardColor }]}>
                 <IconSymbol name={item.icon} size={24} color="#4f46e5" style={profileStyles.menuIcon} />
                 <ThemedText style={profileStyles.menuText}>{item.title}</ThemedText>

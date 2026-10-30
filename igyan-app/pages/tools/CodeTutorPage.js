@@ -1,3 +1,4 @@
+import { chatCompletion } from '../../services/aiClient';
 /**
  * iGyan App - Code Tutor Page
  * AI-powered coding teacher for all programming languages
@@ -12,7 +13,6 @@ import Header from '../../components/Header';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { useSideNav } from '../../utils/SideNavContext';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 const PROGRAMMING_LANGUAGES = [
   { value: 'javascript', label: 'JavaScript', extension: 'js' },
@@ -96,15 +96,9 @@ IMPORTANT:
 - Keep explanations beginner-friendly but technically accurate
 - When explaining code, break it down step-by-step`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
             { role: 'system', content: systemPrompt },
             ...messages.slice(-10).map(msg => ({
               role: msg.role,
@@ -112,26 +106,19 @@ IMPORTANT:
             })),
             { role: 'user', content: inputMessage }
           ],
-          temperature: 0.7,
-          max_tokens: 2000,
-        }),
+        temperature: 0.7,
+        maxTokens: 2000
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from AI tutor');
-      }
-
-      const data = await response.json();
       const assistantMessage = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: completionContent,
         timestamp: new Date().toISOString(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
-      console.error('Error:', err);
-      Alert.alert('Error', 'Failed to get response. Please try again.');
+
+      Alert.alert('Error', err.message || 'Failed to get response. Please try again.');
     } finally {
       setIsGenerating(false);
     }

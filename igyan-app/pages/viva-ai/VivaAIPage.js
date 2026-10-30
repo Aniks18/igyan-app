@@ -1,3 +1,4 @@
+import { chatCompletion } from '../../services/aiClient';
 /**
  * iGyan App - Viva AI Page
  * AI-powered pitch deck creator and voice pitch evaluator
@@ -34,7 +35,6 @@ import PitchTimer from '../../components/viva-ai/PitchTimer';
 import ScoreCard from '../../components/viva-ai/ScoreCard';
 import LanguageSelector from '../../components/viva-ai/LanguageSelector';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 const PITCH_DURATION = 300; // 5 minutes in seconds
 
 const EVALUATION_CRITERIA = [
@@ -302,29 +302,16 @@ Format your response as:
 **Key Advice:**
 [One actionable tip]`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
             { role: 'system', content: 'You are a tough but fair Shark Tank investor. Provide honest, constructive feedback.' },
             { role: 'user', content: evaluationPrompt }
           ],
-          temperature: 0.7,
-          max_tokens: 1500,
-        }),
+        temperature: 0.7,
+        maxTokens: 1500
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to get evaluation');
-      }
-
-      const data = await response.json();
-      const evaluationContent = data.choices[0].message.content;
+      const evaluationContent = completionContent;
 
       // Parse scores from response
       const overallMatch = evaluationContent.match(/Overall Score:\s*(\d+)/i);
@@ -363,7 +350,7 @@ Format your response as:
         : summaryText);
 
     } catch (error) {
-      console.error('Evaluation error:', error);
+
       const errorMessage = {
         role: 'assistant',
         content: '❌ **Evaluation Error**\n\nSorry, I couldn\'t evaluate your pitch. Please try again.',
@@ -403,37 +390,26 @@ Format your response as:
 
 Be encouraging but honest. Provide actionable advice. Keep responses concise and helpful.`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
             { role: 'system', content: systemPrompt },
             ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
             { role: 'user', content: inputMessage }
           ],
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
+        temperature: 0.7,
+        maxTokens: 1000
       });
-
-      if (!response.ok) throw new Error('API request failed');
-
-      const data = await response.json();
       const assistantMessage = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: completionContent,
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, assistantMessage]);
 
     } catch (error) {
-      console.error('Chat error:', error);
-      Alert.alert('Error', 'Failed to get response. Please try again.');
+
+      Alert.alert('Error', error.message || 'Failed to get response. Please try again.');
     } finally {
       setIsLoading(false);
     }

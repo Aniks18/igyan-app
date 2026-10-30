@@ -1,3 +1,5 @@
+import { chatCompletion } from '../../services/aiClient';
+import { parseJsonLoose } from '../../services/apiUtils';
 /**
  * iGyan App - Content Generator Page
  * AI-powered document and presentation creator
@@ -16,7 +18,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { File, Paths } from 'expo-file-system/next';
+import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import PptxGenJS from 'pptxgenjs';
 import { ThemedView } from '../../components/ThemedView';
@@ -30,7 +32,6 @@ import TemplateSelector from '../../components/content-generator/TemplateSelecto
 import SlidePreview from '../../components/content-generator/SlidePreview';
 import GeneratedContent from '../../components/content-generator/GeneratedContent';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -157,30 +158,17 @@ Return JSON format:
     try {
       const prompt = getPrompt(contentType, topic);
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o-mini',
+        messages: [
             { role: 'system', content: prompt.system },
             { role: 'user', content: prompt.user },
           ],
-          temperature: 0.7,
-          max_tokens: 3000,
-          response_format: { type: 'json_object' },
-        }),
+        temperature: 0.7,
+        maxTokens: 3000,
+        jsonMode: true
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate content');
-      }
-
-      const data = await response.json();
-      const content = JSON.parse(data.choices[0].message.content);
+      const content = parseJsonLoose(completionContent);
 
       setGeneratedContent({
         type: contentType,
@@ -191,8 +179,7 @@ Return JSON format:
         setEditedSlides(content.slides);
       }
     } catch (error) {
-      console.error('Generation error:', error);
-      setGenerateError('Content generation failed. Check your connection and try again.');
+      setGenerateError(error.message || 'Content generation failed. Check your connection and try again.');
     } finally {
       setIsGenerating(false);
     }

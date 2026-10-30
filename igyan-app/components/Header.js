@@ -56,8 +56,8 @@ export default function Header({
         </View>
 
         {/* Center - School Icon + Title */}
-        <View style={styles.centerSection}>
-          <BrandLogo size={28} />
+        <View pointerEvents="none" style={styles.centerSection}>
+          <BrandLogo size={32} />
           <Text style={[styles.title, { flexShrink: 1 }]} numberOfLines={1}>{title}</Text>
         </View>
 
@@ -119,39 +119,39 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 56,
-    paddingHorizontal: 16,
+    height: 72,
+    paddingHorizontal: 12,
+    gap: 4,
   },
   leftSection: {
-    flex: 1,
+    width: 56,
     alignItems: 'flex-start',
   },
   centerSection: {
-    flex: 2,
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    minWidth: 0,
   },
   rightSection: {
-    flex: 1,
+    width: 108,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: 8,
+    gap: 4,
   },
 
   title: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#0f2444',
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f0f5ff',
@@ -169,19 +169,19 @@ const styles = StyleSheet.create({
     borderColor: '#ffffff',
   },
   profileButton: {
-    marginLeft: 4,
+    marginLeft: 0,
   },
   profileImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 2,
     borderColor: '#4f46e5',
   },
   profilePlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#eef2ff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     borderColor: '#4f46e5',
   },
   profileInitials: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: '#4f46e5',
   },

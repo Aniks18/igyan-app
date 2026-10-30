@@ -15,9 +15,9 @@ export const profileStyles = StyleSheet.create({
     paddingTop: Spacing.xxl,
   },
   avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 112,
+    height: 112,
+    borderRadius: 56,
     backgroundColor: "#4f46e5",
     alignItems: 'center',
     justifyContent: 'center',
@@ -40,7 +40,7 @@ export const profileStyles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: Spacing.lg,
+    paddingVertical: 20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
   },
@@ -57,7 +57,8 @@ export const profileStyles = StyleSheet.create({
     marginTop: Spacing.xs,
   },
   menuSection: {
-    padding: Spacing.md,
+    paddingHorizontal: 24,
+    paddingVertical: Spacing.md,
   },
   sectionTitle: {
     fontSize: FontSizes.lg,
@@ -68,9 +69,9 @@ export const profileStyles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
-    borderRadius: 12,
-    marginBottom: Spacing.sm,
+    padding: 20,
+    borderRadius: 18,
+    marginBottom: 12,
   },
   menuIcon: {
     marginRight: Spacing.md,
@@ -83,9 +84,10 @@ export const profileStyles = StyleSheet.create({
     opacity: 0.5,
   },
   logoutButton: {
-    margin: Spacing.md,
-    padding: Spacing.md,
-    borderRadius: 12,
+    marginHorizontal: 24,
+    marginVertical: Spacing.md,
+    padding: 20,
+    borderRadius: 18,
     alignItems: 'center',
     backgroundColor: '#FF5252',
   },
@@ -99,9 +101,9 @@ export const profileStyles = StyleSheet.create({
     padding: Spacing.md,
   },
   achievementBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: '#FFD700',
     alignItems: 'center',
     justifyContent: 'center',

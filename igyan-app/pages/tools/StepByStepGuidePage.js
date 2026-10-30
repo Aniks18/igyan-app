@@ -1,3 +1,5 @@
+import { parseJsonLoose } from '../../services/apiUtils';
+import { chatCompletion } from '../../services/aiClient';
 /**
  * iGyan App - Step-by-Step Guide Generator
  * AI-powered learning journey architect
@@ -12,7 +14,6 @@ import Header from '../../components/Header';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { useSideNav } from '../../utils/SideNavContext';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 const DETAIL_LEVEL_COPY = {
   quickstart: 'Deliver a compact 4-step guide focused on essential actions and momentum.',
@@ -126,15 +127,9 @@ Return the response in this EXACT JSON format:
 Provide ONLY valid JSON, no additional commentary.`;
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
+      const completionContent = await chatCompletion({
+        model: 'gpt-4o',
+        messages: [
             {
               role: 'system',
               content: 'You are an instructional design expert who creates precise, motivating step-by-step plans for learners and teams. Always return valid JSON responses that are grounded in achievable actions.'
@@ -144,22 +139,15 @@ Provide ONLY valid JSON, no additional commentary.`;
               content: prompt
             }
           ],
-          temperature: 0.7,
-          max_tokens: 3200,
-          response_format: { type: 'json_object' }
-        }),
+        temperature: 0.7,
+        maxTokens: 3200,
+        jsonMode: true
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate guide');
-      }
-
-      const data = await response.json();
-      const generatedContent = data.choices[0].message.content;
-      const parsedData = JSON.parse(generatedContent);
+      const generatedContent = completionContent;
+      const parsedData = parseJsonLoose(generatedContent);
       setGuide(parsedData);
     } catch (err) {
-      console.error('Error generating guide:', err);
+
       Alert.alert('Error', 'Failed to generate guide. Please try again.');
       setShowForm(true);
     } finally {

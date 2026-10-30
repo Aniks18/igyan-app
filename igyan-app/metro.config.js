@@ -9,8 +9,8 @@
 // - unstable_enablePackageExports: lets Metro use packages' `exports` maps,
 //   which shortens resolution for ESM-heavy deps (verified in Metro 0.83).
 //
-// Lazy bundling (only bundle the route you open) is a CLI flag, not a config
-// key, so the npm scripts pass `--lazy`. Do not add `resetCache: true` here.
+// Expo controls development bundling; SDK 54 has no --lazy CLI flag.
+// Keep the cache between runs; do not add `resetCache: true` here.
 const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);

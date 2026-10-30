@@ -1,3 +1,4 @@
+import { chatCompletion } from '../services/aiClient';
 /**
  * iGyan App - AI Copilot
  * Personal AI tutor with chat, memory, and notes integration
@@ -23,7 +24,6 @@ import notesData from '../data/copilot/notes.json';
 import { copilotStyles as styles } from '../styles/pages/copilotStyles';
 import CopilotSidebar from '../components/copilot/Sidebar';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 export default function AICopilotScreen() {
   const cardColor = useThemeColor({}, 'card');
@@ -138,31 +138,12 @@ export default function AICopilotScreen() {
 
   // Call OpenAI API
   const callOpenAI = async (conversationMessages) => {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: conversationMessages,
-          temperature: 0.7,
-          max_tokens: 1500,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from OpenAI');
-      }
-
-      const data = await response.json();
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error('OpenAI API Error:', error);
-      throw error;
-    }
+    return chatCompletion({
+      model: 'gpt-4o',
+      messages: conversationMessages,
+      temperature: 0.7,
+      maxTokens: 1500,
+    });
   };
 
   // Build context prompt
@@ -238,11 +219,6 @@ export default function AICopilotScreen() {
   // Handle send message
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isTyping) return;
-
-    if (!OPENAI_API_KEY) {
-      Alert.alert('Error', 'OpenAI API key not configured');
-      return;
-    }
 
     const userMessage = {
       role: 'user',

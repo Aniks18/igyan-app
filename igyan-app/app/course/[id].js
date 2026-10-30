@@ -101,14 +101,8 @@ export default function CourseDetailScreen() {
         title={course.title || 'Course Details'} 
         onMenuPress={openSideNav} 
       />
-      <ScrollView>
-        {/* Course Header */}
-        <View style={[styles.headerImage, { justifyContent: 'center', alignItems: 'center' }]}>
-          <ThemedText style={{ fontSize: 80 }}>{course.thumbnail}</ThemedText>
-        </View>
-        
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <ThemedText style={styles.courseTitle}>{course.title}</ThemedText>
           <View style={styles.categoryBadge}>
             <ThemedText style={styles.categoryText}>{course.category}</ThemedText>
           </View>
@@ -226,18 +220,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerImage: {
-    width: '100%',
-    height: 200,
-    backgroundColor: "#4f46e5",
+  scrollContent: {
+    paddingBottom: 24,
   },
   content: {
     padding: 16,
-  },
-  courseTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    paddingTop: 12,
   },
   instructor: {
     fontSize: 16,
@@ -271,9 +259,9 @@ const styles = StyleSheet.create({
   lessonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    padding: 20,
+    borderRadius: 18,
+    marginBottom: 16,
   },
   lessonNumber: {
     width: 48,
@@ -313,14 +301,14 @@ const styles = StyleSheet.create({
   languageToggle: {
     flexDirection: 'row',
     backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 16,
+    borderRadius: 18,
+    padding: 6,
+    marginBottom: 20,
   },
   languageButton: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
   },
   languageButtonActive: {

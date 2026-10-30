@@ -13,6 +13,7 @@ import { IconSymbol } from '../../components/IconSymbol';
 import { homeStyles } from '../../styles/pages/homeStyles';
 import { useAuth } from '../../utils/AuthContext';
 import { supabase } from '../../utils/supabase';
+import SuperAdminDashboard from './SuperAdminDashboard';
 
 const INSTITUTIONAL_ROLES = ['super_admin', 'co_admin', 'student', 'faculty', 'parent'];
 
@@ -56,6 +57,10 @@ export default function HomePage() {
       if (!error && data) setChildren(data);
     } catch (e) { console.error('Error fetching children:', e); }
   };
+
+  if (user?.role === 'super_admin') {
+    return <SuperAdminDashboard user={user} school={schoolData} />;
+  }
 
   return (
     <ThemedView style={[homeStyles.container, { backgroundColor: c.background }]}>

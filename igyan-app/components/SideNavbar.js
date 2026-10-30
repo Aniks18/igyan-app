@@ -1,6 +1,8 @@
 /**
- * iGyan App - Side Navigation Bar Component
- * Minimalist side drawer with clean animations
+ * iGyan App - Side Navigation Drawer
+ * Hallmark · component: drawer · genre: modern-minimal · theme: githubUI system
+ * states: default · pressed · focus-visible · active-route · expanded · selected
+ * contrast: body text ≥ 7:1, muted ≥ 4.5:1 on surface
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -16,31 +18,48 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BrandLogo from './BrandLogo';
 import { IconSymbol } from './IconSymbol';
 import { useAuth } from '../utils/AuthContext';
 import { supabase } from '../utils/supabase';
+import { githubUI as c } from '../constants/githubUI';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const DRAWER_WIDTH = Math.min(290, SCREEN_WIDTH * 0.8);
+const DRAWER_WIDTH = Math.min(312, SCREEN_WIDTH * 0.86);
 
-const navItems = [
-  { id: 'home', label: 'Dashboard', icon: 'house.fill', route: '/(tabs)/home' },
-  { id: 'courses', label: 'Learn', icon: 'book.fill', route: '/(tabs)/courses' },
-  { id: 'explore', label: 'Explore', icon: 'magnifyingglass', route: '/(tabs)/explore' },
-  { id: 'live', label: 'Classroom', icon: 'video.fill', route: '/live-classroom' },
-  { id: 'attendance', label: 'Attendance', icon: 'checklist', route: '/attendance' },
-  { id: 'viva-ai', label: 'AI Viva Lab', icon: 'sparkles', route: '/viva-ai' },
-  { id: 'shark-ai', label: 'Shark AI', icon: 'chart.line.uptrend.xyaxis', route: '/shark-ai' },
-  { id: 'content-gen', label: 'Pitch Craft', icon: 'doc.richtext.fill', route: '/content-generator' },
-  { id: 'incubation', label: 'Incubation Hub', icon: 'building.2.fill', route: '/incubation-hub' },
-  { id: 'tools', label: 'AI Tools', icon: 'cpu', route: '/tools/index' },
-  { id: 'daily-calendar', label: 'Manage Timetable', icon: 'calendar', route: '/daily-calendar' },
-  { id: 'daily-timetable', label: 'Daily Timetable', icon: 'clock.fill', route: '/daily-timetable' },
-  // "Manage School" is handled as an expandable group below
-  // "Messages" is conditionally added for parent/faculty below
+const SECTIONS = [
+  {
+    id: 'overview',
+    title: 'Overview',
+    items: [
+      { id: 'home', label: 'Dashboard', icon: 'house.fill', route: '/(tabs)/home' },
+      { id: 'courses', label: 'Learn', icon: 'book.fill', route: '/(tabs)/courses' },
+      { id: 'explore', label: 'Explore', icon: 'magnifyingglass', route: '/(tabs)/explore' },
+      { id: 'live', label: 'Classroom', icon: 'video.fill', route: '/live-classroom' },
+      { id: 'attendance', label: 'Attendance', icon: 'checklist', route: '/attendance' },
+    ],
+  },
+  {
+    id: 'studio',
+    title: 'Create & grow',
+    items: [
+      { id: 'viva-ai', label: 'AI Viva Lab', icon: 'sparkles', route: '/viva-ai' },
+      { id: 'shark-ai', label: 'Shark AI', icon: 'chart.line.uptrend.xyaxis', route: '/shark-ai' },
+      { id: 'content-gen', label: 'Pitch Craft', icon: 'doc.richtext.fill', route: '/content-generator' },
+      { id: 'incubation', label: 'Incubation Hub', icon: 'building.2.fill', route: '/incubation-hub' },
+      { id: 'tools', label: 'AI Tools', icon: 'cpu', route: '/tools/index' },
+    ],
+  },
+  {
+    id: 'schedule',
+    title: 'Schedule',
+    items: [
+      { id: 'daily-calendar', label: 'Manage Timetable', icon: 'calendar', route: '/daily-calendar' },
+      { id: 'daily-timetable', label: 'Daily Timetable', icon: 'clock.fill', route: '/daily-timetable' },
+    ],
+  },
 ];
 
 const schoolSubItems = [
@@ -52,15 +71,20 @@ const schoolSubItems = [
   { id: 'manage-faculty', label: 'Manage Faculty', icon: 'person.text.rectangle', route: '/manage-faculty' },
 ];
 
-const bottomNavItems = [
-  { id: 'settings', label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
-];
+const CHAT_ITEM = { id: 'chat', label: 'Messages', icon: 'envelope.fill', route: '/chat' };
+const SETTINGS_ITEM = { id: 'settings', label: 'Settings', icon: 'gearshape.fill', route: '/settings' };
+
+const stripGroup = (route) => route.replace('/(tabs)', '');
 
 export default function SideNavbar({ isOpen, onClose }) {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
   const { user, logout } = useAuth();
   const [schoolExpanded, setSchoolExpanded] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  // Stay mounted through the close animation so the drawer slides out
+  // instead of vanishing the frame `isOpen` flips to false.
+  const [visible, setVisible] = useState(isOpen);
 
   useEffect(() => {
     if (user?.role === 'parent') {
@@ -68,22 +92,20 @@ export default function SideNavbar({ isOpen, onClose }) {
     } else if (user?.role === 'faculty' && user?.id) {
       (async () => {
         try {
-          // Try matching by user_id first, then fallback to email
-          let { data, error } = await supabase
+          let { data } = await supabase
             .from('faculty_profiles')
             .select('is_class_teacher')
             .eq('user_id', user.id)
             .maybeSingle();
 
           if (!data && user.email) {
-            ({ data, error } = await supabase
+            ({ data } = await supabase
               .from('faculty_profiles')
               .select('is_class_teacher')
               .eq('email', user.email)
               .maybeSingle());
           }
 
-          console.log('Faculty profile check:', { data, error, userId: user.id, email: user.email });
           setShowChat(data?.is_class_teacher === true);
         } catch (e) {
           console.error('Faculty profile error:', e);
@@ -100,16 +122,19 @@ export default function SideNavbar({ isOpen, onClose }) {
 
   useEffect(() => {
     if (isOpen) {
+      setVisible(true);
+      slideAnim.setValue(-DRAWER_WIDTH);
+      fadeAnim.setValue(0);
       Animated.parallel([
         Animated.spring(slideAnim, {
           toValue: 0,
-          damping: 20,
-          stiffness: 200,
+          damping: 26,
+          stiffness: 260,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 250,
+          duration: 220,
           useNativeDriver: true,
         }),
       ]).start();
@@ -126,6 +151,8 @@ export default function SideNavbar({ isOpen, onClose }) {
           useNativeDriver: true,
         }),
       ]).start();
+      const t = setTimeout(() => setVisible(false), 240);
+      return () => clearTimeout(t);
     }
   }, [isOpen, fadeAnim, slideAnim]);
 
@@ -168,10 +195,38 @@ export default function SideNavbar({ isOpen, onClose }) {
     return roleMap[user.role] || 'User';
   };
 
-  if (!isOpen) return null;
+  const isRouteActive = (route) => {
+    const target = stripGroup(route);
+    if (pathname === route || pathname === target) return true;
+    // Directory index routes (e.g. /tools/index) resolve to the folder path.
+    if (target.endsWith('/index') && pathname === target.slice(0, -'/index'.length)) return true;
+    return target !== '/' && pathname?.startsWith(`${target}/`);
+  };
+
+  const renderItem = (item) => {
+    const active = isRouteActive(item.route);
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={[styles.navItem, active && styles.navItemActive]}
+        accessibilityRole="button"
+        accessibilityLabel={item.label}
+        accessibilityState={{ selected: active }}
+        onPress={() => handleNavigation(item.route)}
+        activeOpacity={0.6}
+      >
+        <View style={styles.iconCell}>
+          <IconSymbol name={item.icon} size={20} color={active ? c.primary : c.placeholder} />
+        </View>
+        <Text style={[styles.navLabel, active && styles.navLabelActive]}>{item.label}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  if (!visible) return null;
 
   return (
-    <View style={[styles.overlay, { paddingTop: 0 }]} pointerEvents="box-none">
+    <View style={styles.overlay} pointerEvents="box-none">
       {/* Backdrop */}
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]} />
@@ -183,8 +238,8 @@ export default function SideNavbar({ isOpen, onClose }) {
           styles.drawer,
           {
             transform: [{ translateX: slideAnim }],
-            paddingTop: insets.top + 8,
-            paddingBottom: insets.bottom,
+            paddingTop: insets.top + 12,
+            paddingBottom: insets.bottom + 8,
           },
         ]}
       >
@@ -199,12 +254,18 @@ export default function SideNavbar({ isOpen, onClose }) {
               onPress={onClose}
               activeOpacity={0.7}
             >
-              <IconSymbol name="xmark" size={18} color="#94a3b8" />
+              <IconSymbol name="xmark" size={16} color={c.muted} />
             </TouchableOpacity>
           </View>
 
-          {/* Profile */}
-          <View style={styles.profileSection}>
+          {/* Profile card */}
+          <TouchableOpacity
+            style={styles.profileCard}
+            accessibilityRole="button"
+            accessibilityLabel="Open profile"
+            onPress={() => handleNavigation('/(tabs)/profile')}
+            activeOpacity={0.7}
+          >
             <View style={styles.avatarContainer}>
               {user?.avatar_url ? (
                 <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
@@ -214,109 +275,107 @@ export default function SideNavbar({ isOpen, onClose }) {
                 </View>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>
-              {user?.full_name || 'Guest User'}
-            </Text>
-            <Text style={styles.userRole}>{getUserRole()}</Text>
-          </View>
+            <View style={styles.profileMeta}>
+              <Text style={styles.userName} numberOfLines={1}>
+                {user?.full_name || 'Guest User'}
+              </Text>
+              <View style={styles.rolePill}>
+                <Text style={styles.roleText}>{getUserRole()}</Text>
+              </View>
+            </View>
+            <IconSymbol name="chevron.right" size={16} color={c.placeholder} />
+          </TouchableOpacity>
         </View>
 
-        {/* Navigation Items - Scrollable */}
+        {/* Navigation - scrollable */}
         <ScrollView
           style={styles.navScroll}
           contentContainerStyle={styles.navScrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.navSection}>
-            {navItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.navItem}
-                accessibilityRole="button"
-                accessibilityLabel={item.label}
-                onPress={() => handleNavigation(item.route)}
-                activeOpacity={0.6}
-              >
-                <IconSymbol name={item.icon} size={18} color="#64748b" />
-                <Text style={styles.navLabel}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
+          {SECTIONS.map((section, sectionIndex) => (
+            <View key={section.id} style={sectionIndex > 0 && styles.sectionGap}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              {section.items.map(renderItem)}
+            </View>
+          ))}
 
-            {/* Chat - visible for parent & faculty */}
-            {showChat && (
-              <TouchableOpacity
-                style={styles.navItem}
-                accessibilityRole="button"
-                accessibilityLabel="Messages"
-                onPress={() => handleNavigation('/chat')}
-                activeOpacity={0.6}
-              >
-                <IconSymbol name="envelope.fill" size={18} color="#64748b" />
-                <Text style={styles.navLabel}>Messages</Text>
-              </TouchableOpacity>
-            )}
+          {showChat && (
+            <View style={styles.sectionGap}>
+              <Text style={styles.sectionTitle}>Inbox</Text>
+              {renderItem(CHAT_ITEM)}
+            </View>
+          )}
 
-            {/* Expandable Manage School group */}
+          {/* Manage School group */}
+          <View style={styles.sectionGap}>
+            <Text style={styles.sectionTitle}>Administration</Text>
             <TouchableOpacity
               style={styles.navItem}
               accessibilityRole="button"
               accessibilityLabel={schoolExpanded ? 'Collapse Manage School' : 'Expand Manage School'}
               accessibilityState={{ expanded: schoolExpanded }}
-              onPress={() => setSchoolExpanded(prev => !prev)}
+              onPress={() => setSchoolExpanded((prev) => !prev)}
               activeOpacity={0.6}
             >
-              <IconSymbol name="gearshape.fill" size={18} color="#64748b" />
+              <View style={styles.iconCell}>
+                <IconSymbol name="building.columns.fill" size={20} color={c.placeholder} />
+              </View>
               <Text style={styles.navLabel}>Manage School</Text>
-              <IconSymbol name={schoolExpanded ? 'chevron.up' : 'chevron.down'} size={12} color="#475569" />
+              <IconSymbol
+                name={schoolExpanded ? 'chevron.up' : 'chevron.down'}
+                size={14}
+                color={c.muted}
+              />
             </TouchableOpacity>
-            {schoolExpanded && schoolSubItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.navItem, styles.subNavItem]}
-                accessibilityRole="button"
-                accessibilityLabel={item.label}
-                onPress={() => handleNavigation(item.route)}
-                activeOpacity={0.6}
-              >
-                <IconSymbol name={item.icon} size={15} color="#475569" />
-                <Text style={[styles.navLabel, styles.subNavLabel]}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
+            {schoolExpanded && (
+              <View style={styles.subList}>
+                {schoolSubItems.map((item) => {
+                  const active = isRouteActive(item.route);
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[styles.navItem, styles.subNavItem, active && styles.navItemActive]}
+                      accessibilityRole="button"
+                      accessibilityLabel={item.label}
+                      accessibilityState={{ selected: active }}
+                      onPress={() => handleNavigation(item.route)}
+                      activeOpacity={0.6}
+                    >
+                      <View style={styles.iconCell}>
+                        <IconSymbol
+                          name={item.icon}
+                          size={18}
+                          color={active ? c.primary : c.placeholder}
+                        />
+                      </View>
+                      <Text style={[styles.navLabel, styles.subNavLabel, active && styles.navLabelActive]}>
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </View>
         </ScrollView>
 
-        {/* Bottom Section */}
+        {/* Bottom actions */}
         <View style={styles.bottomSection}>
-          <View style={styles.bottomDivider} />
-          
-          {bottomNavItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.navItem}
-              accessibilityRole="button"
-              accessibilityLabel={item.label}
-              onPress={() => handleNavigation(item.route)}
-              activeOpacity={0.6}
-            >
-              <IconSymbol name={item.icon} size={18} color="#64748b" />
-              <Text style={styles.navLabel}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-
-          {/* Logout */}
+          {renderItem(SETTINGS_ITEM)}
           <TouchableOpacity
-            style={[styles.navItem, styles.logoutItem]}
+            style={styles.navItem}
             accessibilityRole="button"
             accessibilityLabel="Sign out"
             onPress={handleLogout}
             activeOpacity={0.6}
           >
-            <IconSymbol name="rectangle.portrait.and.arrow.right" size={18} color="#ef4444" />
+            <View style={styles.iconCell}>
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={c.error} />
+            </View>
             <Text style={[styles.navLabel, styles.logoutLabel]}>Sign Out</Text>
           </TouchableOpacity>
-
-          {/* Footer */}
-          <Text style={styles.footerText}>iGyan v1.0.0</Text>
+          <Text style={styles.footerText}>iGyan v1.1.0</Text>
         </View>
       </Animated.View>
     </View>
@@ -331,7 +390,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(15, 36, 68, 0.45)',
   },
   drawer: {
     position: 'absolute',
@@ -339,13 +398,16 @@ const styles = StyleSheet.create({
     left: 0,
     width: DRAWER_WIDTH,
     height: '100%',
-    backgroundColor: '#ffffff',
+    backgroundColor: c.surface,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 4, height: 0 },
-        shadowOpacity: 0.25,
-        shadowRadius: 16,
+        shadowColor: '#0f2444',
+        shadowOffset: { width: 8, height: 0 },
+        shadowOpacity: 0.18,
+        shadowRadius: 24,
       },
       android: {
         elevation: 24,
@@ -353,116 +415,162 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    minHeight: 44,
   },
   closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f0f5ff',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: c.subtle,
+    borderWidth: 1,
+    borderColor: c.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileSection: {
+  profileCard: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: c.background,
+    borderWidth: 1,
+    borderColor: c.border,
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 12,
+    gap: 12,
   },
   avatarContainer: {
-    marginBottom: 12,
+    width: 48,
+    height: 48,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#d9e3f3',
+    borderColor: c.border,
   },
   avatarPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#4f46e5',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: c.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: '#ffffff',
-    letterSpacing: 0.5,
+  },
+  profileMeta: {
+    flex: 1,
+    gap: 5,
   },
   userName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0f2444',
-    marginBottom: 2,
+    fontSize: 15,
+    fontWeight: '700',
+    color: c.heading,
   },
-  userRole: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '400',
+  rolePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: c.subtle,
+    borderWidth: 1,
+    borderColor: c.border,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  roleText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: c.muted,
+    letterSpacing: 0.3,
   },
   navScroll: {
     flex: 1,
   },
   navScrollContent: {
-    paddingTop: 4,
-  },
-  navSection: {
     paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  sectionGap: {
+    marginTop: 18,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: c.placeholder,
+    paddingHorizontal: 12,
+    marginBottom: 6,
   },
   navItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    borderRadius: 12,
     marginVertical: 1,
-    gap: 14,
+    gap: 12,
+  },
+  navItemActive: {
+    backgroundColor: c.focusBackground,
+  },
+  // Fixed-width slot so every label starts on the same vertical line.
+  iconCell: {
+    width: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   navLabel: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '400',
-    color: '#12305c',
-    letterSpacing: 0.1,
+    fontWeight: '500',
+    color: c.text,
+  },
+  navLabelActive: {
+    color: c.primary,
+    fontWeight: '600',
+  },
+  subList: {
+    marginLeft: 25,
+    paddingLeft: 10,
+    borderLeftWidth: 2,
+    borderLeftColor: c.border,
+    marginTop: 2,
+    gap: 1,
   },
   subNavItem: {
-    paddingLeft: 48,
-    paddingVertical: 10,
+    paddingVertical: 9,
   },
   subNavLabel: {
     fontSize: 13,
-    color: '#94a3b8',
   },
   bottomSection: {
+    backgroundColor: c.surface,
+    borderTopWidth: 1,
+    borderTopColor: c.border,
     paddingHorizontal: 12,
-    paddingBottom: 12,
-  },
-  bottomDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#d9e3f3',
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  logoutItem: {
-    marginTop: 4,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   logoutLabel: {
-    color: '#ef4444',
-    fontWeight: '500',
+    color: c.error,
+    fontWeight: '600',
   },
   footerText: {
     fontSize: 11,
-    color: '#334155',
+    color: c.muted,
     textAlign: 'center',
-    marginTop: 12,
-    letterSpacing: 0.5,
+    marginTop: 10,
+    letterSpacing: 0.4,
   },
 });
